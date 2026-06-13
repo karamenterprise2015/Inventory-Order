@@ -20,6 +20,8 @@ import {
 import BottomNavigation from '@/components/BottomNavigation';
 import QuantitySelector from '@/components/QuantitySelector';
 import CartDrawer from '@/components/CartDrawer';
+import ProductSalesBarChart from '@/components/ProductSalesBarChart';
+import CategoryDistributionDonutChart from '@/components/CategoryDistributionDonutChart';
 
 // Animation variants for staggered catalog entrance
 const catalogVariants = {
@@ -743,9 +745,25 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* By Category */}
+              {/* Product Sales Bar Chart */}
               <div style={styles.analyticsSection}>
-                <h3 style={styles.analyticsTitle}>By Category</h3>
+                <h3 style={styles.analyticsTitle}>Product Sales</h3>
+                <div style={styles.chartCard}>
+                  <ProductSalesBarChart data={analytics.byItem} />
+                </div>
+              </div>
+
+              {/* Category Distribution Donut Chart */}
+              <div style={styles.analyticsSection}>
+                <h3 style={styles.analyticsTitle}>Category Distribution</h3>
+                <div style={styles.chartCard}>
+                  <CategoryDistributionDonutChart data={analytics.byCategory} />
+                </div>
+              </div>
+
+              {/* By Category - Text List */}
+              <div style={styles.analyticsSection}>
+                <h3 style={styles.analyticsTitle}>By Category Details</h3>
                 {Object.entries(analytics.byCategory).map(([category, data]) => (
                   <div key={category} style={styles.categoryAnalytics}>
                     <div style={styles.categoryHeader}>
@@ -1434,6 +1452,13 @@ const styles = {
     fontSize: '16px',
     fontWeight: '800',
     color: 'var(--text-primary)',
+  },
+  chartCard: {
+    backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-md)',
+    padding: '16px',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-sm)',
   },
   categoryAnalytics: {
     backgroundColor: 'var(--surface)',
