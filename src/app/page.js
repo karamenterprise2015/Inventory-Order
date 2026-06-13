@@ -22,6 +22,7 @@ import QuantitySelector from '@/components/QuantitySelector';
 import CartDrawer from '@/components/CartDrawer';
 import ProductSalesBarChart from '@/components/ProductSalesBarChart';
 import CategoryDistributionDonutChart from '@/components/CategoryDistributionDonutChart';
+import ShowOrder from '@/components/ShowOrder';
 
 // Animation variants for staggered catalog entrance
 const catalogVariants = {
@@ -64,6 +65,9 @@ export default function Home() {
   
   // Cancel order confirmation
   const [orderToCancel, setOrderToCancel] = useState(null);
+
+  // Show order details
+  const [orderToView, setOrderToView] = useState(null);
 
   // Analytics state
   const [analytics, setAnalytics] = useState(null);
@@ -328,7 +332,7 @@ export default function Home() {
   };
 
   const formatWhatsAppMessage = (order) => {
-    let msg = `📦 *Inventory Order*\n`;
+    let msg = `Burger Bhau Kothariya Order \n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
     msg += `*Ordered by:* ${order.personName}\n`;
     msg += `*Date:* ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n`;
@@ -597,6 +601,8 @@ export default function Home() {
                   key={order.id}
                   variants={itemVariants}
                   style={styles.orderCard}
+                  onClick={() => setOrderToView(order)}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <div style={styles.orderCardHeader}>
                     <div>
@@ -849,6 +855,18 @@ export default function Home() {
         onPlaceOrder={handlePlaceOrder}
         isSubmitting={isSubmitting}
         isSuccess={isSuccess}
+      />
+
+      {/* Show Order Details Drawer */}
+      <ShowOrder
+        order={orderToView}
+        onClose={() => setOrderToView(null)}
+        onResendWhatsApp={(order) => {
+          const wText = formatWhatsAppMessage(order);
+          window.open(`https://wa.me/?text=${encodeURIComponent(wText)}`, '_blank');
+        }}
+        onCancel={handleCancelOrder}
+        onReorder={handleReorder}
       />
 
       {/* Navigation tabs */}
@@ -1464,6 +1482,7 @@ const styles = {
     padding: '16px',
     border: '1px solid var(--border)',
     boxShadow: 'var(--shadow-sm)',
+    height: '300px',
   },
   categoryAnalytics: {
     backgroundColor: 'var(--surface)',
