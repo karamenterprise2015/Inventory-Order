@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 
 export async function GET() {
   try {
-    const orders = db.getOrders();
+    const orders = await db.getOrders();
     return NextResponse.json({ success: true, orders });
   } catch (error) {
     console.error('API get orders error:', error);
@@ -32,7 +32,7 @@ export async function POST(request) {
       );
     }
 
-    const newOrder = db.createOrder({
+    const newOrder = await db.createOrder({
       personName: body.personName.trim(),
       notes: body.notes ? body.notes.trim() : '',
       items: body.items
@@ -60,7 +60,7 @@ export async function DELETE(request) {
       );
     }
 
-    const cancelledOrder = db.cancelOrder(orderId);
+    const cancelledOrder = await db.cancelOrder(orderId);
     
     if (!cancelledOrder) {
       return NextResponse.json(

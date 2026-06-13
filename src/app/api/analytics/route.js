@@ -7,7 +7,7 @@ export async function GET(request) {
     const year = searchParams.get('year') ? parseInt(searchParams.get('year')) : null;
     const month = searchParams.get('month') ? parseInt(searchParams.get('month')) : undefined;
 
-    const analytics = db.getAnalytics(year, month);
+    const analytics = await db.getAnalytics(year, month);
     return NextResponse.json({ success: true, analytics });
   } catch (error) {
     console.error('API analytics error:', error);

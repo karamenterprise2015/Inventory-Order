@@ -1,5 +1,7 @@
-// Vercel-compatible in-memory database for demo purposes
-// For production, replace with Vercel KV, Postgres, or other persistent storage
+// Vercel-compatible database with Supabase integration
+// For production, ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set
+
+import { supabase } from './supabase.js';
 
 const INITIAL_ITEMS = [
   // Bakery
@@ -47,7 +49,7 @@ const INITIAL_ITEMS = [
   { id: '28', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&auto=format&fit=crop&q=80' }
 ];
 
-// In-memory storage (resets on server restart)
+// In-memory storage (resets on server restart) - fallback if Supabase not configured
 let orders = [];
 
 export const db = {
@@ -55,108 +57,312 @@ export const db = {
     return INITIAL_ITEMS;
   },
 
-  getOrders: () => {
-    // Return orders sorted by creation date descending
-    return orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  },
+  getOrders: async () => {
+    // Try Supabase first
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-  createOrder: (orderData) => {
-    const newOrder = {
-      id: `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
-      personName: orderData.personName || 'Unnamed Person',
-      notes: orderData.notes || '',
-      items: orderData.items || [],
-      totalItems: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
-      status: 'Ordered',
-      createdAt: new Date().toISOString(),
-    };
-    
-    orders.push(newOrder);
-    return newOrder;
-  },
+      if (error) throw error;
 
-  cancelOrder: (orderId) => {
-    const orderIndex = orders.findIndex(order => order.id === orderId);
-    if (orderIndex > -1) {
-      orders[orderIndex].status = 'Cancelled';
-      orders[orderIndex].cancelledAt = new Date().toISOString();
-      return orders[orderIndex];
+      // Transform Supabase data to match expected format
+      return data.map(order => ({
+        id: order.id,
+        personName: order.person_name,
+        notes: order.notes,
+        items: order.items,
+        totalItems: order.total_items,
+        status: order.status,
+        createdAt: order.created_at,
+        cancelledAt: order.cancelled_at
+      }));
+    } catch (error) {
+      console.warn('Supabase error, using in-memory fallback:', error.message);
+      // Return in-memory orders sorted by creation date descending
+      return orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
-    return null;
   },
 
-  deleteOrder: (orderId) => {
-    const orderIndex = orders.findIndex(order => order.id === orderId);
-    if (orderIndex > -1) {
-      const deletedOrder = orders.splice(orderIndex, 1)[0];
-      return deletedOrder;
+  createOrder: async (orderData) => {
+    // Try Supabase first
+    try {
+      const newOrder = {
+        id: `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+        person_name: orderData.personName || 'Unnamed Person',
+        notes: orderData.notes || '',
+        items: orderData.items || [],
+        total_items: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
+        status: 'Ordered',
+      };
+
+      const { data, error } = await supabase
+        .from('orders')
+        .insert(newOrder)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Transform back to expected format
+      return {
+        id: data.id,
+        personName: data.person_name,
+        notes: data.notes,
+        items: data.items,
+        totalItems: data.total_items,
+        status: data.status,
+        createdAt: data.created_at,
+        cancelledAt: data.cancelled_at
+      };
+    } catch (error) {
+      console.warn('Supabase error, using in-memory fallback:', error.message);
+      // Fallback to in-memory storage
+      const newOrder = {
+        id: `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+        personName: orderData.personName || 'Unnamed Person',
+        notes: orderData.notes || '',
+        items: orderData.items || [],
+        totalItems: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
+        status: 'Ordered',
+        createdAt: new Date().toISOString(),
+      };
+
+      orders.push(newOrder);
+      return newOrder;
     }
-    return null;
   },
 
-  getAnalytics: (year, month) => {
-    const filteredOrders = orders.filter(order => {
-      if (order.status === 'Cancelled') return false;
-      
-      const orderDate = new Date(order.createdAt);
-      const orderYear = orderDate.getFullYear();
-      const orderMonth = orderDate.getMonth();
-      
-      if (year && orderYear !== year) return false;
-      if (month !== undefined && orderMonth !== month) return false;
-      
-      return true;
-    });
+  cancelOrder: async (orderId) => {
+    // Try Supabase first
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'Cancelled',
+          cancelled_at: new Date().toISOString()
+        })
+        .eq('id', orderId)
+        .select()
+        .single();
 
-    // Calculate analytics by category and item
-    const analytics = {
-      totalOrders: filteredOrders.length,
-      totalItems: filteredOrders.reduce((sum, order) => sum + order.totalItems, 0),
-      byCategory: {},
-      byItem: {},
-      byPerson: {}
-    };
+      if (error) throw error;
 
-    filteredOrders.forEach(order => {
-      // By person
-      if (!analytics.byPerson[order.personName]) {
-        analytics.byPerson[order.personName] = {
-          orders: 0,
-          items: 0
-        };
+      // Transform back to expected format
+      return {
+        id: data.id,
+        personName: data.person_name,
+        notes: data.notes,
+        items: data.items,
+        totalItems: data.total_items,
+        status: data.status,
+        createdAt: data.created_at,
+        cancelledAt: data.cancelled_at
+      };
+    } catch (error) {
+      console.warn('Supabase error, using in-memory fallback:', error.message);
+      // Fallback to in-memory storage
+      const orderIndex = orders.findIndex(order => order.id === orderId);
+      if (orderIndex > -1) {
+        orders[orderIndex].status = 'Cancelled';
+        orders[orderIndex].cancelledAt = new Date().toISOString();
+        return orders[orderIndex];
       }
-      analytics.byPerson[order.personName].orders += 1;
-      analytics.byPerson[order.personName].items += order.totalItems;
+      return null;
+    }
+  },
 
-      // By category and item
-      order.items.forEach(item => {
-        // By category
-        if (!analytics.byCategory[item.category]) {
-          analytics.byCategory[item.category] = {
-            totalQuantity: 0,
-            items: {}
+  deleteOrder: async (orderId) => {
+    // Try Supabase first
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Transform back to expected format
+      return {
+        id: data.id,
+        personName: data.person_name,
+        notes: data.notes,
+        items: data.items,
+        totalItems: data.total_items,
+        status: data.status,
+        createdAt: data.created_at,
+        cancelledAt: data.cancelled_at
+      };
+    } catch (error) {
+      console.warn('Supabase error, using in-memory fallback:', error.message);
+      // Fallback to in-memory storage
+      const orderIndex = orders.findIndex(order => order.id === orderId);
+      if (orderIndex > -1) {
+        const deletedOrder = orders.splice(orderIndex, 1)[0];
+        return deletedOrder;
+      }
+      return null;
+    }
+  },
+
+  getAnalytics: async (year, month) => {
+    // Try Supabase first
+    try {
+      let query = supabase
+        .from('orders')
+        .select('*');
+
+      // Filter by year if provided
+      if (year) {
+        const startDate = new Date(year, 0, 1).toISOString();
+        const endDate = new Date(year + 1, 0, 1).toISOString();
+        query = query.gte('created_at', startDate).lt('created_at', endDate);
+      }
+
+      // Filter by month if provided
+      if (month !== undefined) {
+        const startDate = new Date(year || new Date().getFullYear(), month, 1).toISOString();
+        const endDate = new Date(year || new Date().getFullYear(), month + 1, 1).toISOString();
+        query = query.gte('created_at', startDate).lt('created_at', endDate);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      // Filter out cancelled orders and transform data
+      const filteredOrders = data
+        .filter(order => order.status !== 'Cancelled')
+        .map(order => ({
+          id: order.id,
+          personName: order.person_name,
+          notes: order.notes,
+          items: order.items,
+          totalItems: order.total_items,
+          status: order.status,
+          createdAt: order.created_at,
+          cancelledAt: order.cancelled_at
+        }));
+
+      // Calculate analytics by category and item
+      const analytics = {
+        totalOrders: filteredOrders.length,
+        totalItems: filteredOrders.reduce((sum, order) => sum + order.totalItems, 0),
+        byCategory: {},
+        byItem: {},
+        byPerson: {}
+      };
+
+      filteredOrders.forEach(order => {
+        // By person
+        if (!analytics.byPerson[order.personName]) {
+          analytics.byPerson[order.personName] = {
+            orders: 0,
+            items: 0
           };
         }
-        analytics.byCategory[item.category].totalQuantity += item.quantity;
+        analytics.byPerson[order.personName].orders += 1;
+        analytics.byPerson[order.personName].items += order.totalItems;
 
-        // By item within category
-        if (!analytics.byCategory[item.category].items[item.name]) {
-          analytics.byCategory[item.category].items[item.name] = 0;
-        }
-        analytics.byCategory[item.category].items[item.name] += item.quantity;
+        // By category and item
+        order.items.forEach(item => {
+          // By category
+          if (!analytics.byCategory[item.category]) {
+            analytics.byCategory[item.category] = {
+              totalQuantity: 0,
+              items: {}
+            };
+          }
+          analytics.byCategory[item.category].totalQuantity += item.quantity;
 
-        // By item (global)
-        if (!analytics.byItem[item.name]) {
-          analytics.byItem[item.name] = {
-            category: item.category,
-            totalQuantity: 0,
-            unit: item.unit
-          };
-        }
-        analytics.byItem[item.name].totalQuantity += item.quantity;
+          // By item within category
+          if (!analytics.byCategory[item.category].items[item.name]) {
+            analytics.byCategory[item.category].items[item.name] = 0;
+          }
+          analytics.byCategory[item.category].items[item.name] += item.quantity;
+
+          // By item (global)
+          if (!analytics.byItem[item.name]) {
+            analytics.byItem[item.name] = {
+              category: item.category,
+              totalQuantity: 0,
+              unit: item.unit
+            };
+          }
+          analytics.byItem[item.name].totalQuantity += item.quantity;
+        });
       });
-    });
 
-    return analytics;
+      return analytics;
+    } catch (error) {
+      console.warn('Supabase error, using in-memory fallback:', error.message);
+      // Fallback to in-memory storage
+      const filteredOrders = orders.filter(order => {
+        if (order.status === 'Cancelled') return false;
+
+        const orderDate = new Date(order.createdAt);
+        const orderYear = orderDate.getFullYear();
+        const orderMonth = orderDate.getMonth();
+
+        if (year && orderYear !== year) return false;
+        if (month !== undefined && orderMonth !== month) return false;
+
+        return true;
+      });
+
+      // Calculate analytics by category and item
+      const analytics = {
+        totalOrders: filteredOrders.length,
+        totalItems: filteredOrders.reduce((sum, order) => sum + order.totalItems, 0),
+        byCategory: {},
+        byItem: {},
+        byPerson: {}
+      };
+
+      filteredOrders.forEach(order => {
+        // By person
+        if (!analytics.byPerson[order.personName]) {
+          analytics.byPerson[order.personName] = {
+            orders: 0,
+            items: 0
+          };
+        }
+        analytics.byPerson[order.personName].orders += 1;
+        analytics.byPerson[order.personName].items += order.totalItems;
+
+        // By category and item
+        order.items.forEach(item => {
+          // By category
+          if (!analytics.byCategory[item.category]) {
+            analytics.byCategory[item.category] = {
+              totalQuantity: 0,
+              items: {}
+            };
+          }
+          analytics.byCategory[item.category].totalQuantity += item.quantity;
+
+          // By item within category
+          if (!analytics.byCategory[item.category].items[item.name]) {
+            analytics.byCategory[item.category].items[item.name] = 0;
+          }
+          analytics.byCategory[item.category].items[item.name] += item.quantity;
+
+          // By item (global)
+          if (!analytics.byItem[item.name]) {
+            analytics.byItem[item.name] = {
+              category: item.category,
+              totalQuantity: 0,
+              unit: item.unit
+            };
+          }
+          analytics.byItem[item.name].totalQuantity += item.quantity;
+        });
+      });
+
+      return analytics;
+    }
   }
 };
