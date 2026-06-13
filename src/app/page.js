@@ -620,7 +620,7 @@ export default function Home() {
                   </div>
 
                   <div style={styles.orderStoreInfo}>
-                    <User size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
+                    <MapPin size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
                     <span style={{ fontWeight: '700' }}>{order.personName}</span>
                   </div>
 
