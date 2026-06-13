@@ -18,12 +18,23 @@ const createMockClient = () => {
   const mockError = new Error('Supabase credentials not configured');
   return {
     from: () => ({
-      select: () => ({ data: [], error: mockError }),
+      select: () => ({
+        data: [],
+        error: mockError,
+        order: () => ({ data: [], error: mockError }),
+        gte: () => ({ lt: () => ({ data: [], error: mockError }) }),
+      }),
       insert: () => ({ data: null, error: mockError }),
-      update: () => ({ data: null, error: mockError }),
-      delete: () => ({ data: null, error: mockError }),
-      order: () => ({ data: [], error: mockError }),
-      gte: () => ({ lt: () => ({ data: [], error: mockError }) }),
+      update: () => ({
+        data: null,
+        error: mockError,
+        eq: () => ({ select: () => ({ data: null, error: mockError }) }),
+      }),
+      delete: () => ({
+        data: null,
+        error: mockError,
+        eq: () => ({ select: () => ({ data: null, error: mockError }) }),
+      }),
     }),
   };
 };
