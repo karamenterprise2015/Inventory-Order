@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Package, History, ShoppingCart, BarChart3 } from 'lucide-react';
+import { Package, History, BarChart3 } from 'lucide-react';
 
-export default function BottomNavigation({ activeTab, setActiveTab, cartCount, openCart }) {
+export default function BottomNavigation({ activeTab, setActiveTab }) {
   return (
     <div style={styles.navContainer} className="glass-panel">
       <div style={styles.navBar}>
@@ -39,29 +39,6 @@ export default function BottomNavigation({ activeTab, setActiveTab, cartCount, o
           )}
         </button>
 
-        {/* Cart Tab (Floating Center Button) */}
-        <motion.button
-          onClick={openCart}
-          whileTap={{ scale: 0.9 }}
-          whileHover={{ scale: 1.05 }}
-          style={styles.cartCircleButton}
-          aria-label="Open Order Cart"
-        >
-          <div style={styles.cartIconWrapper} id="nav-cart-btn">
-            <ShoppingCart size={22} color="#ffffff" strokeWidth={2.5} />
-            {cartCount > 0 && (
-              <motion.span
-                key={cartCount}
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                style={styles.cartBadge}
-                className="glow-active"
-              >
-                {cartCount}
-              </motion.span>
-            )}
-          </div>
-        </motion.button>
 
         {/* Orders Tab */}
         <button
@@ -176,41 +153,5 @@ const styles = {
     height: '4px',
     backgroundColor: 'var(--accent)',
     borderRadius: 'var(--radius-full)',
-  },
-  cartCircleButton: {
-    width: '54px',
-    height: '54px',
-    borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--accent)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: '-26px',
-    border: '4px solid var(--surface)',
-    boxShadow: '0 6px 16px rgba(99, 102, 241, 0.4)',
-    zIndex: 10,
-  },
-  cartIconWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cartBadge: {
-    position: 'absolute',
-    top: '-9px',
-    right: '-11px',
-    backgroundColor: 'var(--danger)',
-    color: '#ffffff',
-    fontSize: '10px',
-    fontWeight: '800',
-    minWidth: '18px',
-    height: '18px',
-    borderRadius: 'var(--radius-full)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0 4px',
-    border: '2px solid var(--accent)',
   },
 };

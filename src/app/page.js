@@ -194,20 +194,13 @@ export default function Home() {
     setTimeout(() => {
       const el = document.getElementById(`cat-section-${encodeURIComponent(cat)}`);
       if (el) {
-        const yOffset = -140; // sticky header compensation
-        const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
-        // Ensure we don't scroll to negative position
-        const targetY = Math.max(0, y);
-        window.scrollTo({ top: targetY, behavior: 'smooth' });
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         console.warn(`Category section not found: ${cat}`);
         // Try without encoding as fallback
         const fallbackEl = document.getElementById(`cat-section-${cat}`);
         if (fallbackEl) {
-          const yOffset = -140;
-          const y = fallbackEl.getBoundingClientRect().top + window.scrollY + yOffset;
-          const targetY = Math.max(0, y);
-          window.scrollTo({ top: targetY, behavior: 'smooth' });
+          fallbackEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }
     }, 100);
@@ -844,8 +837,6 @@ export default function Home() {
       <BottomNavigation
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        cartCount={cartCount}
-        openCart={() => setIsCartOpen(true)}
       />
 
       {/* Cancel Order Confirmation Dialog */}
