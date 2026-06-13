@@ -33,29 +33,32 @@ export default function ProductSalesBarChart({ data }) {
     .slice(0, 10); // Show top 10 products
 
   return (
-    <div style={{ width: '100%', height: 300 }}>
+    <div style={{ width: '100%', height: '100%', minHeight: '250px' }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+        <BarChart data={chartData} layout="horizontal" margin={{ top: 10, right: 20, left: 80, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis 
-            dataKey="name" 
-            angle={-45}
-            textAnchor="end"
-            height={80}
-            interval={0}
-            tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
+            type="number"
+            tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border)' }}
+            tickLine={false}
           />
           <YAxis 
-            tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+            dataKey="name"
+            type="category"
+            width={75}
+            tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border)' }}
+            tickLine={false}
           />
           <Tooltip 
             contentStyle={{ 
               backgroundColor: 'var(--surface)', 
               border: '1px solid var(--border)',
               borderRadius: '8px',
-              color: 'var(--text-primary)'
+              color: 'var(--text-primary)',
+              fontSize: '12px',
+              padding: '8px'
             }}
             formatter={(value, name, props) => [
               `${value} ${props.payload.unit}`,

@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 
 export default function QuantitySelector({ quantity, onChange, unit = 'unit' }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(quantity.toString());
+
   const handleDecrement = (e) => {
     e.stopPropagation();
     if (quantity > 0) {
@@ -15,6 +18,30 @@ export default function QuantitySelector({ quantity, onChange, unit = 'unit' }) 
   const handleIncrement = (e) => {
     e.stopPropagation();
     onChange(quantity + 1, e);
+  };
+
+  const handleQuantityClick = (e) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setInputValue(quantity.toString());
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+  };
+
+  const handleInputBlur = () => {
+    const numValue = parseInt(inputValue) || 0;
+    const finalValue = Math.max(0, numValue);
+    onChange(finalValue);
+    setIsEditing(false);
+  };
+
+  const handleInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleInputBlur();
+    }
   };
 
   return (
@@ -57,18 +84,37 @@ export default function QuantitySelector({ quantity, onChange, unit = 'unit' }) 
             {/* Quantity text display */}
             <div style={styles.valueWrapper}>
               <AnimatePresence mode="popLayout">
-                <motion.span
-                  key={quantity}
-                  initial={{ y: 8, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -8, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 20 }}
-                  style={styles.quantityValue}
-                >
-                  {quantity}
-                </motion.span>
+                {isEditing ? (
+                  <motion.input
+                    key="input"
+                    initial={{ scale: 0.95 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0.95 }}
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onBlur={handleInputBlur}
+                    onKeyPress={handleInputKeyPress}
+                    style={styles.quantityInput}
+                    autoFocus
+                  />
+                ) : (
+                  <motion.span
+                    key={quantity}
+                    initial={{ y: 8, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -8, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+                    style={styles.quantityValue}
+                    onClick={handleQuantityClick}
+                  >
+                    {quantity}
+                  </motion.span>
+                )}
               </AnimatePresence>
-              <span style={styles.unitText}>{unit}</span>
+              {!isEditing && <span style={styles.unitText}>{unit}</span>}
             </div>
 
             {/* Plus Button */}
@@ -145,6 +191,22 @@ const styles = {
     fontWeight: '800',
     color: 'var(--text-primary)',
     lineHeight: '1.1',
+    cursor: 'pointer',
+  },
+  quantityInput: {
+    fontSize: '14px',
+    fontWeight: '800',
+    color: 'var(--text-primary)',
+    lineHeight: '1.1',
+    width: '46px',
+    textAlign: 'center',
+    border: 'none',
+    background: 'transparent',
+    outline: 'none',
+    padding: 0,
+    margin: 0,
+    WebkitAppearance: 'none',
+    MozAppearance: 'textfield',
   },
   unitText: {
     fontSize: '8px',

@@ -60,23 +60,26 @@ export default function CategoryDistributionDonutChart({ data }) {
         display: 'flex', 
         flexWrap: 'wrap', 
         justifyContent: 'center', 
-        gap: '12px',
-        marginTop: '16px',
-        padding: '0 16px'
+        gap: '8px',
+        marginTop: '12px',
+        padding: '0 8px'
       }}>
         {payload.map((entry, index) => (
           <div key={`legend-${index}`} style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            fontSize: '12px',
-            color: 'var(--text-secondary)'
+            fontSize: '11px',
+            color: 'var(--text-secondary)',
+            padding: '4px 8px',
+            backgroundColor: 'var(--surface-secondary)',
+            borderRadius: '12px'
           }}>
             <div style={{
-              width: '12px',
-              height: '12px',
+              width: '8px',
+              height: '8px',
               borderRadius: '50%',
               backgroundColor: entry.color,
-              marginRight: '6px'
+              marginRight: '4px'
             }} />
             <span>{entry.value}</span>
           </div>
@@ -86,15 +89,15 @@ export default function CategoryDistributionDonutChart({ data }) {
   };
 
   return (
-    <div style={{ width: '100%', height: 350 }}>
+    <div style={{ width: '100%', height: '100%', minHeight: '280px' }}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={chartData}
             cx="50%"
-            cy="45%"
-            innerRadius={60}
-            outerRadius={100}
+            cy="40%"
+            innerRadius={45}
+            outerRadius={75}
             paddingAngle={2}
             dataKey="value"
           >

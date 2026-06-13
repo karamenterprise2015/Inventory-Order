@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { X, Trash2, ShoppingBag, User, FileText, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, ShoppingBag, User, FileText, AlertCircle } from 'lucide-react';
 import SwipeConfirm from './SwipeConfirm';
 import QuantitySelector from './QuantitySelector';
 
@@ -203,65 +203,25 @@ export default function CartDrawer({
   );
 }
 
-// Swipeable Card Wrapper component using Framer Motion drag gestures
+// Card Wrapper component
 function SwipeableItemCard({ item, updateQuantity }) {
-  const x = useMotionValue(0);
-  const deleteThreshold = -80;
-  
-  // Dynamic opacity of the delete label background based on drag distance
-  const deleteLabelOpacity = useTransform(x, [0, deleteThreshold], [0.3, 1]);
-
-  const handleDragEnd = (event, info) => {
-    if (info.offset.x < deleteThreshold) {
-      // Swipe action triggers delete
-      updateQuantity(item.id, 0);
-    }
-  };
-
   return (
-    <div style={styles.cardWrapper}>
-      {/* Background Red Delete Block */}
-      <motion.div
-        style={{
-          ...styles.deleteReveal,
-          opacity: deleteLabelOpacity,
-        }}
-      >
-        <div style={styles.deleteLabel}>
-          <Trash2 size={18} />
-          <span>Remove</span>
+    <div style={styles.card}>
+      <div style={styles.cardInfo}>
+        <img src={item.image} alt={item.name} style={styles.itemThumb} />
+        <div>
+          <h4 style={styles.itemName}>{item.name}</h4>
+          <p style={styles.itemCategory}>{item.category}</p>
         </div>
-      </motion.div>
-
-      {/* Foreground Draggable card item */}
-      <motion.div
-        drag="x"
-        dragDirectionLock
-        dragConstraints={{ left: -110, right: 0 }}
-        dragElastic={0.1}
-        onDragEnd={handleDragEnd}
-        style={{
-          ...styles.card,
-          x,
-        }}
-        whileDrag={{ cursor: 'grabbing' }}
-      >
-        <div style={styles.cardInfo}>
-          <img src={item.image} alt={item.name} style={styles.itemThumb} />
-          <div>
-            <h4 style={styles.itemName}>{item.name}</h4>
-            <p style={styles.itemCategory}>{item.category}</p>
-          </div>
-        </div>
-        
-        <div style={styles.quantityContainer}>
-          <QuantitySelector
-            quantity={item.quantity}
-            unit={item.unit}
-            onChange={(q) => updateQuantity(item.id, q)}
-          />
-        </div>
-      </motion.div>
+      </div>
+      
+      <div style={styles.quantityContainer}>
+        <QuantitySelector
+          quantity={item.quantity}
+          unit={item.unit}
+          onChange={(q) => updateQuantity(item.id, q)}
+        />
+      </div>
     </div>
   );
 }
@@ -388,41 +348,7 @@ const styles = {
     flexDirection: 'column',
     overflow: 'hidden',
   },
-  cardWrapper: {
-    position: 'relative',
-    overflow: 'hidden',
-    borderRadius: 'var(--radius-md)',
-    marginBottom: '12px',
-    backgroundColor: 'var(--danger)',
-  },
-  deleteReveal: {
-   position: 'fixed',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    width: '100%',
-    maxWidth: '480px',
-    backgroundColor: 'var(--danger)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 'var(--radius-md)',
-    zIndex: 1,
-  },
-  deleteLabel: {
-    color: '#ffffff',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4px',
-    fontSize: '10px',
-    fontWeight: '800',
-    textTransform: 'uppercase',
-  },
   card: {
-    position: 'relative',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -430,14 +356,12 @@ const styles = {
     backgroundColor: 'var(--surface)',
     border: '1px solid var(--border)',
     borderRadius: 'var(--radius-md)',
-    zIndex: 2,
-    touchAction: 'pan-y', // enables page scrolling while dragging horizontally
+    marginBottom: '12px',
   },
   cardInfo: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    pointerEvents: 'none', // ensures dragging is smooth on children
   },
   itemThumb: {
     width: '46px',

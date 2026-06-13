@@ -167,6 +167,8 @@ const styles = {
   },
   centerLabel: {
     position: 'absolute',
+    left: '50%',
+    transform: 'translateX(-50%)',
     fontSize: '14px',
     fontWeight: '700',
     letterSpacing: '-0.01em',

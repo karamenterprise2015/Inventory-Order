@@ -60,20 +60,20 @@ export async function DELETE(request) {
       );
     }
 
-    const cancelledOrder = await db.cancelOrder(orderId);
+    const deletedOrder = await db.deleteOrder(orderId);
     
-    if (!cancelledOrder) {
+    if (!deletedOrder) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, order: cancelledOrder });
+    return NextResponse.json({ success: true, order: deletedOrder });
   } catch (error) {
-    console.error('API cancel order error:', error);
+    console.error('API delete order error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to cancel order' },
+      { success: false, error: 'Failed to delete order' },
       { status: 500 }
     );
   }

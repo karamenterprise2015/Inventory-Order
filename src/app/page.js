@@ -747,7 +747,7 @@ export default function Home() {
 
               {/* Product Sales Bar Chart */}
               <div style={styles.analyticsSection}>
-                <h3 style={styles.analyticsTitle}>Product Sales</h3>
+                <h3 style={styles.analyticsTitle}>Products</h3>
                 <div style={styles.chartCard}>
                   <ProductSalesBarChart data={analytics.byItem} />
                 </div>
@@ -1346,17 +1346,22 @@ const styles = {
   },
   confirmDialog: {
     position: 'fixed',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    width: '100%',
+    maxWidth: '480px',
     backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-lg)',
+    borderTopLeftRadius: 'var(--radius-lg)',
+    borderTopRightRadius: 'var(--radius-lg)',
     padding: '24px',
+    paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
     boxShadow: 'var(--shadow-lg)',
     zIndex: 3001,
-    maxWidth: '400px',
-    width: 'calc(100% - 48px)',
     border: '1px solid var(--border)',
+    borderBottom: 'none',
   },
   confirmHeader: {
     display: 'flex',
