@@ -11,4 +11,21 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase environment variables not set. Using in-memory fallback.');
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+// Create a mock client if credentials are missing to avoid build errors
+const createMockClient = () => {
+  const mockError = new Error('Supabase credentials not configured');
+  return {
+    from: () => ({
+      select: () => ({ data: [], error: mockError }),
+      insert: () => ({ data: null, error: mockError }),
+      update: () => ({ data: null, error: mockError }),
+      delete: () => ({ data: null, error: mockError }),
+      order: () => ({ data: [], error: mockError }),
+      gte: () => ({ lt: () => ({ data: [], error: mockError }) }),
+    }),
+  };
+};
+
+export const supabase = (supabaseUrl && supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMockClient();
