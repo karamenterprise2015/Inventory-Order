@@ -65,7 +65,10 @@ export const db = {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase getOrders error:', error);
+        throw error;
+      }
 
       // Transform Supabase data to match expected format
       return data.map(order => ({
@@ -79,7 +82,8 @@ export const db = {
         cancelledAt: order.cancelled_at
       }));
     } catch (error) {
-      console.warn('Supabase error, using in-memory fallback:', error.message);
+      console.error('Supabase error, using in-memory fallback:', error.message);
+      console.error('Full error:', error);
       // Return in-memory orders sorted by creation date descending
       return orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
@@ -103,7 +107,10 @@ export const db = {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase createOrder error:', error);
+        throw error;
+      }
 
       // Transform back to expected format
       return {
@@ -117,7 +124,8 @@ export const db = {
         cancelledAt: data.cancelled_at
       };
     } catch (error) {
-      console.warn('Supabase error, using in-memory fallback:', error.message);
+      console.error('Supabase error, using in-memory fallback:', error.message);
+      console.error('Full error:', error);
       // Fallback to in-memory storage
       const newOrder = {
         id: `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
