@@ -334,7 +334,7 @@ export default function Home() {
   const formatWhatsAppMessage = (order) => {
     let msg = `Burger Bhau Kothariya Order \n`;
     msg += `*Date:* ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n`;
-
+    msg += '--------------------------------\n';
     const grouped = order.items.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
       acc[item.category].push(item);
@@ -349,10 +349,6 @@ export default function Home() {
       msg += `\n`;
     });
 
-    msg += `*Total Items:* ${order.totalItems}\n`;
-    if (order.notes) {
-      msg += `*Notes:* _${order.notes}_\n`;
-    }
 
     return msg;
   };
