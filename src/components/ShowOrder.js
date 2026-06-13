@@ -65,7 +65,7 @@ export default function ShowOrder({ order, onClose, onResendWhatsApp, onCancel, 
 
           {/* Person Info */}
           <div style={styles.infoRow}>
-            <MapPin size={16} style={styles.infoIcon} />
+            <User size={16} style={styles.infoIcon} />
             <span style={styles.infoText}>{order.personName}</span>
           </div>
 

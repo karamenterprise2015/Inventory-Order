@@ -35,25 +35,25 @@ export default function ProductSalesBarChart({ data }) {
   return (
     <div style={{ width: '100%', height: '100%', minHeight: '250px' }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} layout="horizontal" margin={{ top: 10, right: 20, left: 80, bottom: 10 }}>
+        <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis 
-            type="number"
-            tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
-            axisLine={{ stroke: 'var(--border)' }}
-            tickLine={false}
-          />
-          <YAxis 
+          <XAxis
             dataKey="name"
-            type="category"
-            width={75}
+            tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
+            axisLine={{ stroke: 'var(--border)' }}
+            tickLine={false}
+            angle={-45}
+            textAnchor="end"
+            height={60}
+          />
+          <YAxis
             tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
             axisLine={{ stroke: 'var(--border)' }}
             tickLine={false}
           />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: 'var(--surface)', 
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'var(--surface)',
               border: '1px solid var(--border)',
               borderRadius: '8px',
               color: 'var(--text-primary)',
@@ -65,7 +65,7 @@ export default function ProductSalesBarChart({ data }) {
               props.payload.fullName
             ]}
           />
-          <Bar dataKey="sales" radius={[4, 4, 0, 0]}>
+          <Bar dataKey="sales" fill="var(--accent)">
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}

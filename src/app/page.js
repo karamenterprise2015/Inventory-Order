@@ -333,10 +333,7 @@ export default function Home() {
 
   const formatWhatsAppMessage = (order) => {
     let msg = `Burger Bhau Kothariya Order \n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `*Ordered by:* ${order.personName}\n`;
     msg += `*Date:* ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
     const grouped = order.items.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
@@ -352,12 +349,10 @@ export default function Home() {
       msg += `\n`;
     });
 
-    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
     msg += `*Total Items:* ${order.totalItems}\n`;
     if (order.notes) {
       msg += `*Notes:* _${order.notes}_\n`;
     }
-    msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
     return msg;
   };
@@ -625,7 +620,7 @@ export default function Home() {
                   </div>
 
                   <div style={styles.orderStoreInfo}>
-                    <MapPin size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
+                    <User size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
                     <span style={{ fontWeight: '700' }}>{order.personName}</span>
                   </div>
 
