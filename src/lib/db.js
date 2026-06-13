@@ -8,10 +8,10 @@ const INITIAL_ITEMS = [
   { id: '3', name: 'Sandwich Bread', category: 'Bakery', unit: 'jambo', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80' },
 
   // Milk Products
-  { id: '1', name: 'Cheese Block', category: 'Milk Products', unit: 'box', image: 'https://5.imimg.com/data5/SELLER/Default/2026/2/582570991/TM/FK/AZ/89400533/image.jpeg' },
-  { id: '2', name: 'Cheese Slice', category: 'Milk Products', unit: 'box', image: 'https://www.bbassets.com/media/uploads/p/l/40005949_4-go-cheese-slice-plain.jpg' },
-  { id: '3', name: 'White Cheese', category: 'Milk Products', unit: 'box', image: 'https://images.unsplash.com/photo-1624806992066-50efd09d8c41?w=400&auto=format&fit=crop&q=80' },
-  { id: '4', name: 'Gouda', category: 'Milk Products', unit: 'packet', image: 'https://images.unsplash.com/photo-1618164435735-413d3b066c9a?w=400&auto=format&fit=crop&q=80' },
+  { id: '4', name: 'Cheese Block', category: 'Milk Products', unit: 'box', image: 'https://5.imimg.com/data5/SELLER/Default/2026/2/582570991/TM/FK/AZ/89400533/image.jpeg' },
+  { id: '5', name: 'Cheese Slice', category: 'Milk Products', unit: 'box', image: 'https://www.bbassets.com/media/uploads/p/l/40005949_4-go-cheese-slice-plain.jpg' },
+  { id: '6', name: 'White Cheese', category: 'Milk Products', unit: 'box', image: 'https://images.unsplash.com/photo-1624806992066-50efd09d8c41?w=400&auto=format&fit=crop&q=80' },
+  { id: '7', name: 'Gouda', category: 'Milk Products', unit: 'packet', image: 'https://images.unsplash.com/photo-1618164435735-413d3b066c9a?w=400&auto=format&fit=crop&q=80' },
 
   // Sauces & Dressings
   { id: '8', name: 'Chinese Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&auto=format&fit=crop&q=80' },
