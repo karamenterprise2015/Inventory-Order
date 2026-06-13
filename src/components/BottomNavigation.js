@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Package, History, ShoppingCart } from 'lucide-react';
+import { Package, History, ShoppingCart, BarChart3 } from 'lucide-react';
 
 export default function BottomNavigation({ activeTab, setActiveTab, cartCount, openCart }) {
   return (
@@ -86,6 +86,37 @@ export default function BottomNavigation({ activeTab, setActiveTab, cartCount, o
 
           {/* Spring-animated tab indicator */}
           {activeTab === 'orders' && (
+            <motion.div
+              layoutId="activeTabIndicator"
+              style={styles.activePillIndicator}
+              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            />
+          )}
+        </button>
+
+        {/* Analytics Tab */}
+        <button
+          onClick={() => setActiveTab('analytics')}
+          style={styles.navItem}
+          aria-label="View Analytics"
+        >
+          <motion.div
+            animate={{ scale: activeTab === 'analytics' ? 1.12 : 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              color: activeTab === 'analytics' ? 'var(--accent)' : 'var(--text-secondary)',
+              zIndex: 2,
+            }}
+          >
+            <BarChart3 size={22} strokeWidth={activeTab === 'analytics' ? 2.5 : 2} />
+            <span style={styles.navLabel}>Analytics</span>
+          </motion.div>
+
+          {/* Spring-animated tab indicator */}
+          {activeTab === 'analytics' && (
             <motion.div
               layoutId="activeTabIndicator"
               style={styles.activePillIndicator}

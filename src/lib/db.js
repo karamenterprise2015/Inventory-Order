@@ -1,8 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-
-const DB_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DB_DIR, 'db.json');
+// Vercel-compatible in-memory database for demo purposes
+// For production, replace with Vercel KV, Postgres, or other persistent storage
 
 const INITIAL_ITEMS = [
   // Milk Products
@@ -42,58 +39,31 @@ const INITIAL_ITEMS = [
 
   // Oils & Fats
   { id: '24', name: 'Oil', category: 'Oils & Fats', unit: 'box', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&auto=format&fit=crop&q=80' },
-  { id: '25', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&auto=format&fit=crop&q=80' }
+  { id: '25', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&auto=format&fit=crop&q=80' },
+
+  // Bakery
+  { id: '26', name: 'Burger Bun', category: 'Bakery', unit: 'packet', image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&auto=format&fit=crop&q=80' },
+  { id: '27', name: 'Pizza Base', category: 'Bakery', unit: 'bag', image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&auto=format&fit=crop&q=80' },
+  { id: '28', name: 'Sandwich Bread', category: 'Bakery', unit: 'jambo', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80' }
 ];
 
-function initializeDb() {
-  if (!fs.existsSync(DB_DIR)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-  }
-
-  if (!fs.existsSync(DB_FILE)) {
-    const data = {
-      items: INITIAL_ITEMS,
-      orders: []
-    };
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  }
-}
-
-function readDb() {
-  initializeDb();
-  try {
-    const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    console.error('Failed to read database file, resetting database:', error);
-    const data = { items: INITIAL_ITEMS, orders: [] };
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    return data;
-  }
-}
-
-function writeDb(data) {
-  initializeDb();
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-}
+// In-memory storage (resets on server restart)
+let orders = [];
 
 export const db = {
   getItems: () => {
-    const data = readDb();
-    return data.items;
+    return INITIAL_ITEMS;
   },
 
   getOrders: () => {
-    const data = readDb();
     // Return orders sorted by creation date descending
-    return data.orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   },
 
   createOrder: (orderData) => {
-    const data = readDb();
     const newOrder = {
       id: `ORD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
-      storeName: orderData.storeName || 'Unnamed Store',
+      personName: orderData.personName || 'Unnamed Person',
       notes: orderData.notes || '',
       items: orderData.items || [],
       totalItems: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
@@ -101,8 +71,92 @@ export const db = {
       createdAt: new Date().toISOString(),
     };
     
-    data.orders.push(newOrder);
-    writeDb(data);
+    orders.push(newOrder);
     return newOrder;
+  },
+
+  cancelOrder: (orderId) => {
+    const orderIndex = orders.findIndex(order => order.id === orderId);
+    if (orderIndex > -1) {
+      orders[orderIndex].status = 'Cancelled';
+      orders[orderIndex].cancelledAt = new Date().toISOString();
+      return orders[orderIndex];
+    }
+    return null;
+  },
+
+  deleteOrder: (orderId) => {
+    const orderIndex = orders.findIndex(order => order.id === orderId);
+    if (orderIndex > -1) {
+      const deletedOrder = orders.splice(orderIndex, 1)[0];
+      return deletedOrder;
+    }
+    return null;
+  },
+
+  getAnalytics: (year, month) => {
+    const filteredOrders = orders.filter(order => {
+      if (order.status === 'Cancelled') return false;
+      
+      const orderDate = new Date(order.createdAt);
+      const orderYear = orderDate.getFullYear();
+      const orderMonth = orderDate.getMonth();
+      
+      if (year && orderYear !== year) return false;
+      if (month !== undefined && orderMonth !== month) return false;
+      
+      return true;
+    });
+
+    // Calculate analytics by category and item
+    const analytics = {
+      totalOrders: filteredOrders.length,
+      totalItems: filteredOrders.reduce((sum, order) => sum + order.totalItems, 0),
+      byCategory: {},
+      byItem: {},
+      byPerson: {}
+    };
+
+    filteredOrders.forEach(order => {
+      // By person
+      if (!analytics.byPerson[order.personName]) {
+        analytics.byPerson[order.personName] = {
+          orders: 0,
+          items: 0
+        };
+      }
+      analytics.byPerson[order.personName].orders += 1;
+      analytics.byPerson[order.personName].items += order.totalItems;
+
+      // By category and item
+      order.items.forEach(item => {
+        // By category
+        if (!analytics.byCategory[item.category]) {
+          analytics.byCategory[item.category] = {
+            totalQuantity: 0,
+            items: {}
+          };
+        }
+        analytics.byCategory[item.category].totalQuantity += item.quantity;
+
+        // By item within category
+        if (!analytics.byCategory[item.category].items[item.name]) {
+          analytics.byCategory[item.category].items[item.name] = 0;
+        }
+        analytics.byCategory[item.category].items[item.name] += item.quantity;
+
+        // By item (global)
+        if (!analytics.byItem[item.name]) {
+          analytics.byItem[item.name] = {
+            category: item.category,
+            totalQuantity: 0,
+            unit: item.unit
+          };
+        }
+        analytics.byItem[item.name].totalQuantity += item.quantity;
+      });
+    });
+
+    return analytics;
   }
 };

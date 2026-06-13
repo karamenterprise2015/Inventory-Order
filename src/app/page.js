@@ -13,7 +13,9 @@ import {
   ClipboardList,
   ChevronRight,
   FileText,
-  AlertCircle
+  AlertCircle,
+  X,
+  BarChart3
 } from 'lucide-react';
 import BottomNavigation from '@/components/BottomNavigation';
 import QuantitySelector from '@/components/QuantitySelector';
@@ -44,7 +46,7 @@ const itemVariants = {
 };
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'orders'
+  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'orders' | 'analytics'
   const [items, setItems] = useState([]);
   const [orders, setOrders] = useState([]);
   const [cart, setCart] = useState([]); // Array of { id, name, category, unit, quantity, image }
@@ -57,6 +59,15 @@ export default function Home() {
   // Order submission statuses
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Cancel order confirmation
+  const [orderToCancel, setOrderToCancel] = useState(null);
+
+  // Analytics state
+  const [analytics, setAnalytics] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   const catalogContainerRef = useRef(null);
   const observerRef = useRef(null);
@@ -87,6 +98,33 @@ export default function Home() {
     // Fetch orders history records
     fetchOrders();
   }, []);
+
+  // Fetch analytics when tab changes or filters change
+  useEffect(() => {
+    if (activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [activeTab, selectedYear, selectedMonth]);
+
+  const fetchAnalytics = async () => {
+    setAnalyticsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (selectedYear) params.append('year', selectedYear);
+      if (selectedMonth !== undefined) params.append('month', selectedMonth);
+      
+      const response = await fetch(`/api/analytics?${params}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setAnalytics(data.analytics);
+      }
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   const fetchOrders = () => {
     fetch('/api/orders')
@@ -251,7 +289,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          storeName: formData.storeName,
+          personName: formData.personName,
           notes: formData.notes,
           items: cart.map((i) => ({
             id: i.id,
@@ -297,6 +335,7 @@ export default function Home() {
   const formatWhatsAppMessage = (order) => {
     let msg = `📦 *Inventory Order*\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `*Ordered by:* ${order.personName}\n`;
     msg += `*Date:* ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
@@ -340,6 +379,26 @@ export default function Home() {
     setCart(restoredCart);
     setActiveTab('catalog');
     setIsCartOpen(true);
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const response = await fetch(`/api/orders?id=${orderId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        fetchOrders(); // Refresh orders list
+        setOrderToCancel(null);
+      } else {
+        alert(data.error || 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Cancel order error:', error);
+      alert('Error cancelling order. Please try again.');
+    }
   };
 
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -499,7 +558,7 @@ export default function Home() {
             </motion.div>
           )}
         </div>
-      ) : (
+      ) : activeTab === 'orders' ? (
         /* Orders History Panel view */
         <div style={styles.contentWrap}>
           <div style={styles.historyHeader}>
@@ -555,14 +614,18 @@ export default function Home() {
                         })}
                       </p>
                     </div>
-                    <span style={styles.statusBadge}>
+                    <span style={{
+                      ...styles.statusBadge,
+                      backgroundColor: order.status === 'Cancelled' ? 'var(--danger-light)' : 'var(--success-light)',
+                      color: order.status === 'Cancelled' ? 'var(--danger)' : 'var(--success)',
+                    }}>
                       {order.status}
                     </span>
                   </div>
 
                   <div style={styles.orderStoreInfo}>
                     <MapPin size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
-                    <span style={{ fontWeight: '700' }}>{order.storeName}</span>
+                    <span style={{ fontWeight: '700' }}>{order.personName}</span>
                   </div>
 
                   {/* Summary of items */}
@@ -606,6 +669,17 @@ export default function Home() {
                       Resend WhatsApp
                     </motion.button>
 
+                    {order.status !== 'Cancelled' && (
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setOrderToCancel(order)}
+                        style={styles.cancelButton}
+                      >
+                        <X size={12} style={{ marginRight: '5px' }} />
+                        Cancel Order
+                      </motion.button>
+                    )}
+
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleReorder(order)}
@@ -617,6 +691,112 @@ export default function Home() {
                 </motion.div>
               ))}
             </motion.div>
+          )}
+        </div>
+      ) : (
+        /* Analytics Panel view */
+        <div style={styles.contentWrap}>
+          <div style={styles.historyHeader}>
+            <h2 style={styles.sectionHeading}>Order Analytics</h2>
+          </div>
+
+          {/* Date Filter */}
+          <div style={styles.filterContainer}>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              style={styles.filterSelect}
+            >
+              <option value={undefined}>All Months</option>
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i} value={i}>
+                  {new Date(2024, i).toLocaleString('default', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              style={styles.filterSelect}
+            >
+              <option value={2024}>2024</option>
+              <option value={2025}>2025</option>
+              <option value={2026}>2026</option>
+            </select>
+          </div>
+
+          {analyticsLoading ? (
+            <div style={styles.loadingWrap}>
+              {[1, 2, 3].map((n) => (
+                <div key={n} style={styles.skeletonCard} className="animate-pulse">
+                  <div style={{ flex: 1 }}>
+                    <div style={{ height: '16px', width: '40%', borderRadius: 'var(--radius-xs)' }} className="skeleton" />
+                    <div style={{ height: '12px', width: '60%', marginTop: '8px', borderRadius: 'var(--radius-xs)' }} className="skeleton" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : analytics ? (
+            <div style={styles.analyticsContainer}>
+              {/* Summary Cards */}
+              <div style={styles.summaryCards}>
+                <div style={styles.summaryCard}>
+                  <div style={styles.summaryValue}>{analytics.totalOrders}</div>
+                  <div style={styles.summaryLabel}>Total Orders</div>
+                </div>
+                <div style={styles.summaryCard}>
+                  <div style={styles.summaryValue}>{analytics.totalItems}</div>
+                  <div style={styles.summaryLabel}>Total Items</div>
+                </div>
+              </div>
+
+              {/* By Category */}
+              <div style={styles.analyticsSection}>
+                <h3 style={styles.analyticsTitle}>By Category</h3>
+                {Object.entries(analytics.byCategory).map(([category, data]) => (
+                  <div key={category} style={styles.categoryAnalytics}>
+                    <div style={styles.categoryHeader}>
+                      <span style={styles.categoryName}>{category}</span>
+                      <span style={styles.categoryTotal}>{data.totalQuantity} items</span>
+                    </div>
+                    <div style={styles.categoryItems}>
+                      {Object.entries(data.items).map(([itemName, quantity]) => (
+                        <div key={itemName} style={styles.itemStat}>
+                          <span style={styles.itemName}>{itemName}</span>
+                          <span style={styles.itemQuantity}>{quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* By Person */}
+              {Object.keys(analytics.byPerson).length > 0 && (
+                <div style={styles.analyticsSection}>
+                  <h3 style={styles.analyticsTitle}>By Person</h3>
+                  {Object.entries(analytics.byPerson).map(([person, data]) => (
+                    <div key={person} style={styles.personStat}>
+                      <span style={styles.personName}>{person}</span>
+                      <div style={styles.personStats}>
+                        <span style={styles.personStatItem}>{data.orders} orders</span>
+                        <span style={styles.personStatItem}>{data.items} items</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={styles.emptyWrap}>
+              <div style={styles.emptyCircleIcon}>
+                <BarChart3 size={32} color="var(--text-muted)" />
+              </div>
+              <h3 style={{ marginTop: '16px', color: 'var(--text-primary)', fontSize: '16px', fontWeight: '800' }}>No Analytics Data</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', textAlign: 'center', marginTop: '6px', maxWidth: '240px' }}>
+                Place some orders to see analytics here.
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -667,6 +847,51 @@ export default function Home() {
         cartCount={cartCount}
         openCart={() => setIsCartOpen(true)}
       />
+
+      {/* Cancel Order Confirmation Dialog */}
+      <AnimatePresence>
+        {orderToCancel && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOrderToCancel(null)}
+              style={styles.confirmOverlay}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              style={styles.confirmDialog}
+            >
+              <div style={styles.confirmHeader}>
+                <AlertCircle size={24} style={{ color: 'var(--danger)' }} />
+                <h3 style={styles.confirmTitle}>Cancel Order?</h3>
+              </div>
+              <p style={styles.confirmMessage}>
+                Are you sure you want to cancel order {orderToCancel.id}? This action cannot be undone.
+              </p>
+              <div style={styles.confirmActions}>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setOrderToCancel(null)}
+                  style={styles.confirmCancelButton}
+                >
+                  Keep Order
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleCancelOrder(orderToCancel.id)}
+                  style={styles.confirmConfirmButton}
+                >
+                  Yes, Cancel
+                </motion.button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -901,6 +1126,7 @@ const styles = {
     position: 'fixed',
     bottom: 'calc(76px + env(safe-area-inset-bottom))',
     left: '50%',
+    transform: 'translateX(-50%)',
     width: 'calc(100% - 32px)',
     maxWidth: '448px',
     height: '52px',
@@ -1075,6 +1301,17 @@ const styles = {
     fontSize: '12px',
     fontWeight: '700',
   },
+  cancelButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '1px solid var(--danger)',
+    color: 'var(--danger)',
+    padding: '8px 14px',
+    borderRadius: 'var(--radius-full)',
+    fontSize: '12px',
+    fontWeight: '700',
+  },
   reorderButton: {
     display: 'flex',
     alignItems: 'center',
@@ -1086,5 +1323,190 @@ const styles = {
     fontSize: '12px',
     fontWeight: '700',
     border: 'none',
+  },
+  confirmOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(9, 13, 22, 0.6)',
+    backdropFilter: 'blur(4px)',
+    WebkitBackdropFilter: 'blur(4px)',
+    zIndex: 3000,
+  },
+  confirmDialog: {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '24px',
+    boxShadow: 'var(--shadow-lg)',
+    zIndex: 3001,
+    maxWidth: '400px',
+    width: 'calc(100% - 48px)',
+    border: '1px solid var(--border)',
+  },
+  confirmHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '16px',
+  },
+  confirmTitle: {
+    fontSize: '18px',
+    fontWeight: '800',
+    color: 'var(--text-primary)',
+    margin: 0,
+  },
+  confirmMessage: {
+    fontSize: '14px',
+    color: 'var(--text-secondary)',
+    lineHeight: '1.5',
+    marginBottom: '24px',
+  },
+  confirmActions: {
+    display: 'flex',
+    gap: '12px',
+    justifyContent: 'flex-end',
+  },
+  confirmCancelButton: {
+    padding: '10px 20px',
+    borderRadius: 'var(--radius-full)',
+    border: '1px solid var(--border)',
+    backgroundColor: 'var(--surface)',
+    color: 'var(--text-primary)',
+    fontSize: '13px',
+    fontWeight: '700',
+  },
+  confirmConfirmButton: {
+    padding: '10px 20px',
+    borderRadius: 'var(--radius-full)',
+    border: 'none',
+    backgroundColor: 'var(--danger)',
+    color: '#ffffff',
+    fontSize: '13px',
+    fontWeight: '700',
+  },
+  filterContainer: {
+    display: 'flex',
+    gap: '10px',
+    padding: '16px',
+    borderBottom: '1px solid var(--border)',
+  },
+  filterSelect: {
+    padding: '8px 12px',
+    borderRadius: 'var(--radius-sm)',
+    border: '1px solid var(--border)',
+    backgroundColor: 'var(--surface)',
+    color: 'var(--text-primary)',
+    fontSize: '13px',
+    fontWeight: '600',
+  },
+  analyticsContainer: {
+    padding: '16px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+  },
+  summaryCards: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '12px',
+  },
+  summaryCard: {
+    backgroundColor: 'var(--surface-secondary)',
+    borderRadius: 'var(--radius-md)',
+    padding: '16px',
+    border: '1px solid var(--border)',
+  },
+  summaryValue: {
+    fontSize: '28px',
+    fontWeight: '800',
+    color: 'var(--accent)',
+    lineHeight: '1',
+  },
+  summaryLabel: {
+    fontSize: '12px',
+    color: 'var(--text-secondary)',
+    fontWeight: '600',
+    marginTop: '4px',
+  },
+  analyticsSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  analyticsTitle: {
+    fontSize: '16px',
+    fontWeight: '800',
+    color: 'var(--text-primary)',
+  },
+  categoryAnalytics: {
+    backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-md)',
+    padding: '12px',
+    border: '1px solid var(--border)',
+  },
+  categoryHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+    paddingBottom: '8px',
+    borderBottom: '1px solid var(--border)',
+  },
+  categoryName: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: 'var(--text-primary)',
+  },
+  categoryTotal: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: 'var(--accent)',
+  },
+  categoryItems: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  itemStat: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    fontSize: '13px',
+  },
+  itemName: {
+    color: 'var(--text-primary)',
+    fontWeight: '500',
+  },
+  itemQuantity: {
+    color: 'var(--text-secondary)',
+    fontWeight: '700',
+  },
+  personStat: {
+    backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-sm)',
+    padding: '10px 12px',
+    border: '1px solid var(--border)',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  personName: {
+    fontSize: '13px',
+    fontWeight: '700',
+    color: 'var(--text-primary)',
+  },
+  personStats: {
+    display: 'flex',
+    gap: '12px',
+  },
+  personStatItem: {
+    fontSize: '12px',
+    color: 'var(--text-secondary)',
+    fontWeight: '600',
   },
 };

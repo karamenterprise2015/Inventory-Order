@@ -25,15 +25,15 @@ export async function POST(request) {
       );
     }
     
-    if (!body.storeName || body.storeName.trim() === '') {
+    if (!body.personName || body.personName.trim() === '') {
       return NextResponse.json(
-        { success: false, error: 'Store Name is required' },
+        { success: false, error: 'Your Name is required' },
         { status: 400 }
       );
     }
 
     const newOrder = db.createOrder({
-      storeName: body.storeName.trim(),
+      personName: body.personName.trim(),
       notes: body.notes ? body.notes.trim() : '',
       items: body.items
     });
@@ -43,6 +43,37 @@ export async function POST(request) {
     console.error('API create order error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to submit order' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const orderId = searchParams.get('id');
+    
+    if (!orderId) {
+      return NextResponse.json(
+        { success: false, error: 'Order ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const cancelledOrder = db.cancelOrder(orderId);
+    
+    if (!cancelledOrder) {
+      return NextResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, order: cancelledOrder });
+  } catch (error) {
+    console.error('API cancel order error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to cancel order' },
       { status: 500 }
     );
   }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { X, Trash2, ShoppingBag, Store, FileText, AlertCircle } from 'lucide-react';
+import { X, Trash2, ShoppingBag, User, FileText, AlertCircle } from 'lucide-react';
 import SwipeConfirm from './SwipeConfirm';
 import QuantitySelector from './QuantitySelector';
 
@@ -15,35 +15,35 @@ export default function CartDrawer({
   isSubmitting,
   isSuccess
 }) {
-  const [storeName, setStoreName] = useState('');
+  const [personName, setPersonName] = useState('');
   const [notes, setNotes] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   
-  // Load saved Store Name on mount
+  // Load saved Person Name on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedStore = localStorage.getItem('inventory_store_name');
-      if (savedStore) setStoreName(savedStore);
+      const savedPerson = localStorage.getItem('inventory_person_name');
+      if (savedPerson) setPersonName(savedPerson);
     }
   }, []);
 
-  // Update store name and save to localStorage
-  const handleStoreNameChange = (val) => {
-    setStoreName(val);
+  // Update person name and save to localStorage
+  const handlePersonNameChange = (val) => {
+    setPersonName(val);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('inventory_store_name', val);
+      localStorage.setItem('inventory_person_name', val);
     }
     if (val.trim()) setErrorMsg('');
   };
 
   const handleConfirmOrder = () => {
-    if (!storeName.trim()) {
-      setErrorMsg('Store Name is required to place an order.');
-      const input = document.getElementById('store-name-input');
+    if (!personName.trim()) {
+      setErrorMsg('Your Name is required to place an order.');
+      const input = document.getElementById('person-name-input');
       if (input) input.scrollIntoView({ behavior: 'smooth' });
       return;
     }
-    onPlaceOrder({ storeName: storeName.trim(), notes: notes.trim() });
+    onPlaceOrder({ personName: personName.trim(), notes: notes.trim() });
   };
 
   const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -139,16 +139,16 @@ export default function CartDrawer({
                     {/* Order Details Form */}
                     <div style={styles.formContainer}>
                       <div style={styles.inputGroup}>
-                        <label htmlFor="store-name-input" style={styles.label}>
-                          <Store size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
-                          Store Name <span style={{ color: 'var(--danger)' }}>*</span>
+                        <label htmlFor="person-name-input" style={styles.label}>
+                          <User size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
+                          Your Name <span style={{ color: 'var(--danger)' }}>*</span>
                         </label>
                         <input
-                          id="store-name-input"
+                          id="person-name-input"
                           type="text"
-                          placeholder="e.g. Gourmet Pizza Point"
-                          value={storeName}
-                          onChange={(e) => handleStoreNameChange(e.target.value)}
+                          placeholder="e.g. John Smith"
+                          value={personName}
+                          onChange={(e) => handlePersonNameChange(e.target.value)}
                           style={{
                             ...styles.textInput,
                             borderColor: errorMsg ? 'var(--danger)' : 'var(--border)',
