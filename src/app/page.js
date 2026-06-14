@@ -815,7 +815,7 @@ export default function Home() {
                 style={styles.analyticsSection}
               >
                 <div style={styles.analyticsSectionHeader}>
-                  <h3 style={styles.analyticsTitle}>Product Sales</h3>
+                  <h3 style={styles.analyticsTitle}>Product Breakdown</h3>
                   <span style={styles.analyticsBadge}>
                     {Object.keys(analytics.byItem).length} products
                   </span>
