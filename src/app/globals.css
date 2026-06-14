@@ -32,9 +32,14 @@
   --radius-lg: 28px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 16px 36px rgba(15, 23, 42, 0.08);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.02), 0 4px 10px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.04), 0 16px 32px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(0, 0, 0, 0.03);
+  
+  --border-3d: #cbd5e1;
+  --shadow-3d: 0 3px 0 var(--border-3d), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-3d-hover: 0 5px 0 var(--border-3d), 0 8px 16px rgba(0, 0, 0, 0.06);
+  --shadow-3d-active: 0 1px 0 var(--border-3d), 0 2px 4px rgba(0, 0, 0, 0.04);
   
   --glass-bg: rgba(255, 255, 255, 0.8);
   --glass-border: rgba(241, 245, 249, 0.6);
@@ -63,9 +68,14 @@
   --danger: #fb7185;
   --danger-light: #4c0519;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 2px rgba(255, 255, 255, 0.1);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 2px rgba(255, 255, 255, 0.15);
+  
+  --border-3d: #080c13;
+  --shadow-3d: 0 3px 0 var(--border-3d), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-3d-hover: 0 5px 0 var(--border-3d), 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-3d-active: 0 1px 0 var(--border-3d), 0 2px 4px rgba(0, 0, 0, 0.4);
   
   --glass-bg: rgba(18, 24, 36, 0.85);
   --glass-border: rgba(30, 41, 59, 0.7);

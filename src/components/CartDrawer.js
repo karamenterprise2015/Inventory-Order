@@ -206,7 +206,12 @@ export default function CartDrawer({
 // Card Wrapper component
 function SwipeableItemCard({ item, updateQuantity }) {
   return (
-    <div style={styles.card}>
+    <motion.div
+      whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
+      whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      style={styles.card}
+    >
       <div style={styles.cardInfo}>
         <img src={item.image} alt={item.name} style={styles.itemThumb} />
         <div>
@@ -222,7 +227,7 @@ function SwipeableItemCard({ item, updateQuantity }) {
           onChange={(q) => updateQuantity(item.id, q)}
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -357,6 +362,7 @@ const styles = {
     border: '1px solid var(--border)',
     borderRadius: 'var(--radius-md)',
     marginBottom: '12px',
+    boxShadow: 'var(--shadow-3d)',
   },
   cardInfo: {
     display: 'flex',
@@ -406,7 +412,9 @@ const styles = {
   textInput: {
     padding: '12px 16px',
     borderRadius: 'var(--radius-sm)',
-    border: '1px solid var(--border)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
     backgroundColor: 'var(--surface)',
     fontSize: '14px',
     color: 'var(--text-primary)',

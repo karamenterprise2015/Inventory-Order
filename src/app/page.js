@@ -338,11 +338,8 @@ export default function Home() {
     const dateStr = orderDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     const timeStr = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    let msg = `BURGER BHAU KOTHARIYA\n`;
-
-    msg += `\n`;
-    msg += `Date: ${dateStr}\n`;
-    msg += `\n\n`;
+    let msg = `BURGER BHAU KOTHARIYA\n\n`;
+    msg += `Date: ${dateStr}\n\n`;
 
     const grouped = order.items.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
@@ -459,20 +456,22 @@ export default function Home() {
             {!searchQuery && categories.length > 0 && (
               <div style={styles.categoriesBar} className="no-scrollbar">
                 {categories.map((cat) => (
-                  <button
+                  <motion.button
                     key={cat}
                     onClick={() => scrollToCategory(cat)}
+                    whileHover={{ y: -2 }}
+                    whileTap={{ y: 1 }}
                     style={{
                       ...styles.categoryBadge,
                       backgroundColor: activeCategory === cat ? 'var(--accent)' : 'var(--surface)',
                       color: activeCategory === cat ? '#ffffff' : 'var(--text-secondary)',
                       borderColor: activeCategory === cat ? 'var(--accent)' : 'var(--border)',
-                      boxShadow: activeCategory === cat ? '0 4px 10px rgba(99, 102, 241, 0.25)' : 'var(--shadow-sm)',
+                      boxShadow: activeCategory === cat ? '0 4px 10px rgba(99, 102, 241, 0.25)' : 'var(--shadow-3d)',
                       cursor: 'pointer',
                     }}
                   >
                     {cat}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )}
@@ -525,7 +524,10 @@ export default function Home() {
                     data-category={cat}
                     style={styles.categorySection}
                   >
-                    <h3 style={styles.categoryTitle}>{cat}</h3>
+                    <h3 style={styles.categoryTitle}>
+                      <span style={{ width: '4px', height: '16px', backgroundColor: 'var(--accent)', borderRadius: 'var(--radius-xs)', display: 'inline-block' }}></span>
+                      {cat}
+                    </h3>
                     <div style={styles.cardsGrid}>
                       {categoryItems.map((item) => {
                         const cartItem = cart.find((c) => c.id === item.id);
@@ -535,9 +537,13 @@ export default function Home() {
                           <motion.div
                             key={item.id}
                             variants={itemVariants}
-                            style={styles.productCard}
-                            whileHover={{ y: -2 }}
-                            transition={{ duration: 0.2 }}
+                            style={{
+                              ...styles.productCard,
+                              boxShadow: 'var(--shadow-3d)',
+                            }}
+                            whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
+                            whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                           >
                             <img src={item.image} alt={item.name} style={styles.productThumb} />
                             <div style={styles.productInfo}>
@@ -619,11 +625,13 @@ export default function Home() {
                     variants={itemVariants}
                     style={{
                       ...styles.orderCard,
-                      borderLeft: isCancelled ? '3px solid var(--text-muted)' : '3px solid var(--success)',
+                      borderColor: isCancelled ? 'var(--border)' : 'rgba(16, 185, 129, 0.2)',
+                      opacity: isCancelled ? 0.75 : 1,
+                      boxShadow: isCancelled ? 'var(--shadow-sm)' : 'var(--shadow-3d)',
                     }}
                     onClick={() => setOrderToView(order)}
-                    whileHover={{ y: -1, boxShadow: 'var(--shadow-md)' }}
-                    whileTap={{ scale: 0.99 }}
+                    whileHover={isCancelled ? { y: -1, boxShadow: 'var(--shadow-md)' } : { y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
+                    whileTap={isCancelled ? { scale: 0.99 } : { y: 2, boxShadow: 'var(--shadow-3d-active)' }}
                   >
                     <div style={styles.orderCardHeader}>
                       <div style={styles.orderCardMeta}>
@@ -785,9 +793,12 @@ export default function Home() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
+                  whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
+                  whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
                   style={{
                     ...styles.summaryCard,
-                    borderTop: '3px solid var(--accent)',
+                    borderColor: 'rgba(99, 102, 241, 0.2)',
+                    boxShadow: 'var(--shadow-3d)',
                   }}
                 >
                   <div style={styles.summaryValue}>{analytics.totalOrders}</div>
@@ -797,9 +808,12 @@ export default function Home() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
+                  whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
+                  whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
                   style={{
                     ...styles.summaryCard,
-                    borderTop: '3px solid var(--success)',
+                    borderColor: 'rgba(16, 185, 129, 0.2)',
+                    boxShadow: 'var(--shadow-3d)',
                   }}
                 >
                   <div style={{ ...styles.summaryValue, color: 'var(--success)' }}>{analytics.totalItems}</div>
@@ -1115,7 +1129,9 @@ const styles = {
     borderRadius: 'var(--radius-full)',
     fontSize: '12px',
     fontWeight: '700',
-    border: '1px solid var(--border)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
     transition: 'all 0.15s ease',
   },
   loadingWrap: {
@@ -1182,8 +1198,9 @@ const styles = {
     fontWeight: '800',
     color: 'var(--text-primary)',
     letterSpacing: '-0.01em',
-    borderLeft: '4px solid var(--accent)',
-    paddingLeft: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
     textTransform: 'uppercase',
   },
   cardsGrid: {
@@ -1311,7 +1328,9 @@ const styles = {
   },
   orderCard: {
     backgroundColor: 'var(--surface)',
-    border: '1px solid var(--border)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
     borderRadius: 'var(--radius-sm)',
     padding: '16px',
     boxShadow: 'var(--shadow-sm)',
@@ -1442,7 +1461,7 @@ const styles = {
     fontSize: '12px',
     color: 'var(--text-secondary)',
     backgroundColor: 'var(--surface-secondary)',
-    borderLeft: '3px solid var(--border)',
+    border: '1px solid var(--border)',
     padding: '8px 12px',
     borderRadius: 'var(--radius-xs)',
     lineHeight: '1.4',
@@ -1599,7 +1618,9 @@ const styles = {
     backgroundColor: 'var(--surface)',
     borderRadius: 'var(--radius-xs)',
     padding: '16px',
-    border: '1px solid var(--border)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'var(--border)',
     display: 'flex',
     flexDirection: 'column',
     gap: '2px',

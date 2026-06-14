@@ -24,42 +24,41 @@ const INITIAL_ITEMS = [
   { id: '13', name: 'Schezwan Sauce', category: 'Sauces & Dressings', unit: 'box', image: 'https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axg29whcmhb3/b/tbn-prod-assets/o/PRODUCT_1696394336616.webp' },
   { id: '14', name: 'Thousand Island', category: 'Sauces & Dressings', unit: 'box', image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/sauce-ketchup/5/m/x/1-thousand-dressing-1kg-pouch-1-sauce-veeba-original-imagucjx5frgqmm9.jpeg?q=90' },
   { id: '15', name: 'Mayonnaise', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPTaRmOYiLhFgK5RGEV_CSvEtDpabWyDnT9bzRuQjywTkYuSELABS9fLA&s=10' },
+  { id: '16', name: 'Chipotle Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUEhwtmdU1xLZe76akZnCT9EnKgVGBopM-5OD40N2CnCgYeauDuvshysI&s=10' },
+  { id: '17', name: 'Customized Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6jvFtBuTjezcbiHQN57KIwm0kjLC35Z1VV4Cr2gNb-KwT2U7n39KjTHE&s=10' },
+  { id: '18', name: 'Pizza Sauce', category: 'Sauces & Dressings', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPv7HxAHbKAHqCEbh-jFkncUBJnr_GNZTdGJdKHgf5SA&s=10' },
+  { id: '19', name: 'Makhni Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2VcFpI0Yc-44bBng9q-VwAbhGtnYA2QglmdtRDWviLw&s=10' },
+  { id: '20', name: 'Peri Peri', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/b119d62ac06254c71c88a59807ee4a23.png' },
+  { id: '21', name: 'Korean Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2025/7/532155818/TV/XZ/LQ/123815550/1kg-korean-barbeque-chilli-sauce.png' },
+  { id: '22', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/691d5aef911e761fe41d11f7ed8acec7.png' },
 
   // Toppings
-  { id: '16', name: 'Black Olives', category: 'Toppings', unit: 'unit', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s' },
-  { id: '17', name: 'Jalapeno', category: 'Toppings', unit: 'unit', image: 'https://www.kiranapoorti.com/image/cache/catalog/SARWAR%20JALAPINOS-225x225.jpeg' },
+  { id: '23', name: 'Black Olives', category: 'Toppings', unit: 'unit', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s' },
+  { id: '24', name: 'Jalapeno', category: 'Toppings', unit: 'unit', image: 'https://www.kiranapoorti.com/image/cache/catalog/SARWAR%20JALAPINOS-225x225.jpeg' },
 
   // Frozen/Prepared Foods
-  { id: '18', name: 'Tikki', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvjJXD77qjfaFYWCFh_u0R8ge0ClCc21YRtpC_frUI5Q&s=10' },
-  { id: '19', name: 'French Fries', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8KIENaZXAqzthNmim8Q0rteZHRZP4zt8XPsjdfSeXkmspBCfCXsBhmcA&s=10' },
-  { id: '20', name: 'Manchurian', category: 'Frozen/Prepared Foods', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQe2lMhfvV5d1ndzon5uE1fk_Iu6uIeB-cDou4b1n8cqJVX8FV-SQdmr8&s=10' },
-  { id: '21', name: 'Corn', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5nrBTErra1HdFfQQQ6tjjiVd4hB7h9PZA5WQOurHTavnqjEpbEL-CXPS_&s=10' },
+  { id: '25', name: 'Tikki', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvjJXD77qjfaFYWCFh_u0R8ge0ClCc21YRtpC_frUI5Q&s=10' },
+  { id: '26', name: 'French Fries', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8KIENaZXAqzthNmim8Q0rteZHRZP4zt8XPsjdfSeXkmspBCfCXsBhmcA&s=10' },
+  { id: '27', name: 'Manchurian', category: 'Frozen/Prepared Foods', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQe2lMhfvV5d1ndzon5uE1fk_Iu6uIeB-cDou4b1n8cqJVX8FV-SQdmr8&s=10' },
+  { id: '28', name: 'Corn', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5nrBTErra1HdFfQQQ6tjjiVd4hB7h9PZA5WQOurHTavnqjEpbEL-CXPS_&s=10' },
 
   // Packaging/Boxes
-  { id: '22', name: 'Pizza Box', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/717u+nWAaTL._AC_UF894,1000_QL80_.jpg' },
-  { id: '23', name: 'Parcel Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/71nqJAlHjnL._AC_UF894,1000_QL80_.jpg' },
-  { id: '38', name: 'Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://www.bbassets.com/media/uploads/p/l/40032979_4-heinz-tomato-ketchup.jpg' },
+  { id: '29', name: 'Pizza Box', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/717u+nWAaTL._AC_UF894,1000_QL80_.jpg' },
+  { id: '30', name: 'Parcel Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/71nqJAlHjnL._AC_UF894,1000_QL80_.jpg' },
+  { id: '31', name: 'Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://www.bbassets.com/media/uploads/p/l/40032979_4-heinz-tomato-ketchup.jpg' },
 
   // Spices/Seasonings
-  { id: '24', name: 'Peri Peri Masala', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1rr9FY5j2eam3mJb62JHrZCQCAv89AXWwX0kwR-Uriw&s=10' },
-  { id: '25', name: 'Parcel Oregano', category: 'Spices/Seasonings', unit: 'packet', image: 'https://5.imimg.com/data5/DB/RX/ZI/SELLER-1442638/vkl-oregano-seasoning-sachet-0-8gm-pouch.jpg' },
-  { id: '26', name: 'Parcel Chilli Flakes', category: 'Spices/Seasonings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2023/8/339475399/NY/CM/AW/93581834/chilli-flakes-sachet-500x500.jpg' },
-  { id: '36', name: 'Oregano', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt7rE7c01frkhQi4y1iqgvI9NTbB9Oyo3Fw6kf2Y1vQw&s=10' },
-  { id: '37', name: 'Chilli Flakes', category: 'Spices/Seasonings', unit: 'packet', image: 'https://m.media-amazon.com/images/I/613boUkik6L.jpg' },
+  { id: '32', name: 'Peri Peri Masala', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1rr9FY5j2eam3mJb62JHrZCQCAv89AXWwX0kwR-Uriw&s=10' },
+  { id: '33', name: 'Parcel Oregano', category: 'Spices/Seasonings', unit: 'packet', image: 'https://5.imimg.com/data5/DB/RX/ZI/SELLER-1442638/vkl-oregano-seasoning-sachet-0-8gm-pouch.jpg' },
+  { id: '34', name: 'Parcel Chilli Flakes', category: 'Spices/Seasonings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2023/8/339475399/NY/CM/AW/93581834/chilli-flakes-sachet-500x500.jpg' },
+  { id: '35', name: 'Oregano', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt7rE7c01frkhQi4y1iqgvI9NTbB9Oyo3Fw6kf2Y1vQw&s=10' },
+  { id: '36', name: 'Chilli Flakes', category: 'Spices/Seasonings', unit: 'packet', image: 'https://m.media-amazon.com/images/I/613boUkik6L.jpg' },
 
   // Oils & Fats
-  { id: '27', name: 'Oil', category: 'Oils & Fats', unit: 'box', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&auto=format&fit=crop&q=80' },
-  { id: '28', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&auto=format&fit=crop&q=80' },
-
-  // Sauces & Dressings (Additional)
-  { id: '29', name: 'Chipotle Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUEhwtmdU1xLZe76akZnCT9EnKgVGBopM-5OD40N2CnCgYeauDuvshysI&s=10' },
-  { id: '30', name: 'Customized Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6jvFtBuTjezcbiHQN57KIwm0kjLC35Z1VV4Cr2gNb-KwT2U7n39KjTHE&s=10' },
-  { id: '31', name: 'Pizza Sauce', category: 'Sauces & Dressings', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPv7HxAHbKAHqCEbh-jFkncUBJnr_GNZTdGJdKHgf5SA&s=10' },
-  { id: '32', name: 'Makhni Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2VcFpI0Yc-44bBng9q-VwAbhGtnYA2QglmdtRDWviLw&s=10' },
-  { id: '33', name: 'Peri Peri', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/b119d62ac06254c71c88a59807ee4a23.png' },
-  { id: '34', name: 'Korean Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2025/7/532155818/TV/XZ/LQ/123815550/1kg-korean-barbeque-chilli-sauce.png' },
-  { id: '35', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/691d5aef911e761fe41d11f7ed8acec7.png' },
-];
+  { id: '37', name: 'Oil', category: 'Oils & Fats', unit: 'box', image: 'https://m.media-amazon.com/images/I/71XEWRivd9L._AC_UF350,350_QL80_.jpg' },
+  { id: '38', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/butter/w/e/i/-original-imagz7ffvezgmzfk.jpeg?q=90' },
+  { id: '39', name: 'Paneer', category: 'Oils & Fats', unit: 'Gms', image: 'https://newsmeter.in/h-upload/2025/02/13/394708-20250213175015.webp' },
+ ];
 
 // In-memory storage (resets on server restart) - fallback if Supabase not configured
 let orders = [];
