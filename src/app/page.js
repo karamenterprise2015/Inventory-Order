@@ -15,7 +15,9 @@ import {
   FileText,
   AlertCircle,
   X,
-  BarChart3
+  BarChart3,
+  Clock,
+  Calendar
 } from 'lucide-react';
 import BottomNavigation from '@/components/BottomNavigation';
 import QuantitySelector from '@/components/QuantitySelector';
@@ -332,9 +334,16 @@ export default function Home() {
   };
 
   const formatWhatsAppMessage = (order) => {
-    let msg = `Burger Bhau Kothariya Order \n`;
-    msg += `*Date:* ${new Date(order.createdAt).toLocaleDateString()} ${new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n`;
-    msg += '--------------------------------\n';
+    const orderDate = new Date(order.createdAt);
+    const dateStr = orderDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let msg = `BURGER BHAU KOTHARIYA\n`;
+
+    msg += `\n`;
+    msg += `Date: ${dateStr}\n`;
+    msg += `\n\n`;
+
     const grouped = order.items.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
       acc[item.category].push(item);
@@ -342,13 +351,17 @@ export default function Home() {
     }, {});
 
     Object.keys(grouped).forEach((cat) => {
-      msg += `*${cat.toUpperCase()}*\n`;
+      msg += `▸ *${cat}*\n`;
       grouped[cat].forEach((item) => {
-        msg += `• ${item.name} (${item.unit}) x *${item.quantity}*\n`;
+        const unitStr = item.unit ? item.unit : '';
+        msg += `   ${item.name} - ${item.quantity}${unitStr}\n`;
       });
       msg += `\n`;
     });
 
+    if (order.notes) {
+      msg += `📝 *Notes:* ${order.notes}\n`;
+    }
 
     return msg;
   };
@@ -529,7 +542,7 @@ export default function Home() {
                             <img src={item.image} alt={item.name} style={styles.productThumb} />
                             <div style={styles.productInfo}>
                               <h4 style={styles.productName}>{item.name}</h4>
-                              <span style={styles.productUnitBadge}>{item.unit}</span>
+                              {item.unit && <span style={styles.productUnitBadge}>{item.unit}</span>}
                             </div>
                             <div style={styles.selectorWrapper}>
                               <QuantitySelector
@@ -587,101 +600,150 @@ export default function Home() {
               animate="show"
               style={styles.historyList}
             >
-              {orders.map((order) => (
-                <motion.div
-                  key={order.id}
-                  variants={itemVariants}
-                  style={styles.orderCard}
-                  onClick={() => setOrderToView(order)}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div style={styles.orderCardHeader}>
-                    <div>
-                      <h4 style={styles.orderCardId}>{order.id}</h4>
-                      <p style={styles.orderCardDate}>
-                        {new Date(order.createdAt).toLocaleDateString()} •{' '}
-                        {new Date(order.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                    <span style={{
-                      ...styles.statusBadge,
-                      backgroundColor: order.status === 'Cancelled' ? 'var(--danger-light)' : 'var(--success-light)',
-                      color: order.status === 'Cancelled' ? 'var(--danger)' : 'var(--success)',
-                    }}>
-                      {order.status}
-                    </span>
-                  </div>
+              {orders.map((order) => {
+                // Generate initials for avatar
+                const initials = order.personName
+                  ? order.personName.trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                  : '?';
+                
+                // Format date and time
+                const orderDate = new Date(order.createdAt);
+                const dateStr = orderDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const timeStr = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                  <div style={styles.orderStoreInfo}>
-                    <MapPin size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
-                    <span style={{ fontWeight: '700' }}>{order.personName}</span>
-                  </div>
-
-                  {/* Summary of items */}
-                  <div style={styles.orderItemsSummary}>
-                    <p style={styles.summaryLabel}>Ordered Items ({order.totalItems}):</p>
-                    <div style={styles.orderItemsInlineList}>
-                      {order.items.slice(0, 3).map((it, idx) => (
-                        <span key={idx} style={styles.summaryItemToken}>
-                          {it.name} ({it.quantity})
+                return (
+                  <motion.div
+                    key={order.id}
+                    variants={itemVariants}
+                    style={styles.orderCard}
+                    onClick={() => setOrderToView(order)}
+                    whileHover={{ y: -2, boxShadow: 'var(--shadow-md)' }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <div style={styles.orderCardHeader}>
+                      <div style={styles.orderCardMeta}>
+                        <div style={styles.orderCardIdBadge}>
+                          <span style={styles.orderIdHash}>#</span>
+                          <span style={styles.orderCardIdText}>{order.id.slice(-6).toUpperCase()}</span>
+                        </div>
+                        <span style={{
+                          ...styles.statusBadge,
+                          backgroundColor: order.status === 'Cancelled' ? 'var(--danger-light)' : 'var(--success-light)',
+                          color: order.status === 'Cancelled' ? 'var(--danger)' : 'var(--success)',
+                        }}>
+                          <span style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            backgroundColor: order.status === 'Cancelled' ? 'var(--danger)' : 'var(--success)',
+                            display: 'inline-block',
+                            marginRight: '6px',
+                          }} />
+                          {order.status}
                         </span>
-                      ))}
-                      {order.items.length > 3 && (
-                        <span style={styles.summaryItemTokenMore}>
-                          +{order.items.length - 3} more
-                        </span>
-                      )}
+                      </div>
+                      <div style={styles.orderTimeline}>
+                        <div style={styles.orderTimeItem}>
+                          <Calendar size={12} style={{ marginRight: '4px', color: 'var(--text-muted)' }} />
+                          <span>{dateStr}</span>
+                        </div>
+                        <span style={styles.timelineSeparator}>•</span>
+                        <div style={styles.orderTimeItem}>
+                          <Clock size={12} style={{ marginRight: '4px', color: 'var(--text-muted)' }} />
+                          <span>{timeStr}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {order.notes && (
-                    <div style={styles.orderNotesBlock}>
-                      <FileText size={12} style={{ marginRight: '6px', marginTop: '2px', flexShrink: 0 }} />
-                      <p>
-                        <span style={{ fontWeight: '700' }}>Delivery Instructions: </span>
-                        {order.notes}
-                      </p>
+                    <div style={styles.orderStoreInfo}>
+                      <div style={styles.orderAvatar}>
+                        {initials}
+                      </div>
+                      <div style={styles.orderStoreDetails}>
+                        <span style={styles.orderStoreName}>{order.personName}</span>
+                        <span style={styles.orderStoreSubtitle}>Delivery Order Request</span>
+                      </div>
                     </div>
-                  )}
 
-                  {/* Order Footer card actions */}
-                  <div style={styles.orderCardFooter}>
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        const wText = formatWhatsAppMessage(order);
-                        window.open(`https://wa.me/?text=${encodeURIComponent(wText)}`, '_blank');
-                      }}
-                      style={styles.resendWhatsAppButton}
-                    >
-                      <RefreshCw size={12} style={{ marginRight: '5px' }} />
-                      Resend WhatsApp
-                    </motion.button>
+                    {/* Summary of items */}
+                    <div style={styles.orderItemsSummary}>
+                      <div style={styles.summaryLabelRow}>
+                        <span style={styles.summaryLabel}>Items List</span>
+                        <span style={styles.summaryLabelCount}>{order.totalItems} {order.totalItems === 1 ? 'item' : 'items'}</span>
+                      </div>
+                      <div style={styles.orderItemsInlineList}>
+                        {order.items.slice(0, 3).map((it, idx) => (
+                          <div key={idx} style={styles.summaryItemRow}>
+                            <span style={styles.summaryItemBullet}>▸</span>
+                            <span style={styles.summaryItemName}>{it.name}</span>
+                            <span style={styles.summaryItemQty}>
+                              {it.quantity}{it.unit || ''}
+                            </span>
+                          </div>
+                        ))}
+                        {order.items.length > 3 && (
+                          <div style={styles.summaryItemRowMore}>
+                            <span>and {order.items.length - 3} more items</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                    {order.status !== 'Cancelled' && (
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setOrderToCancel(order)}
-                        style={styles.cancelButton}
-                      >
-                        <X size={12} style={{ marginRight: '5px' }} />
-                        Cancel Order
-                      </motion.button>
+                    {order.notes && (
+                      <div style={styles.orderNotesBlock}>
+                        <FileText size={14} style={{ marginRight: '8px', marginTop: '2px', color: 'var(--accent)', flexShrink: 0 }} />
+                        <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.4' }}>
+                          <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>Delivery Instructions: </span>
+                          {order.notes}
+                        </p>
+                      </div>
                     )}
 
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleReorder(order)}
-                      style={styles.reorderButton}
-                    >
-                      Reorder Items
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
+                    {/* Order Footer card actions */}
+                    <div style={styles.orderCardFooter}>
+                      <div style={styles.secondaryActions}>
+                        {order.status !== 'Cancelled' && (
+                          <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOrderToCancel(order);
+                            }}
+                            style={styles.cancelButton}
+                          >
+                            <X size={13} style={{ marginRight: '4px' }} />
+                            Cancel
+                          </motion.button>
+                        )}
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReorder(order);
+                          }}
+                          style={styles.reorderButton}
+                        >
+                          <ShoppingCart size={13} style={{ marginRight: '4px' }} />
+                          Reorder
+                        </motion.button>
+                      </div>
+
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const wText = formatWhatsAppMessage(order);
+                          window.open(`https://wa.me/?text=${encodeURIComponent(wText)}`, '_blank');
+                        }}
+                        style={styles.resendWhatsAppButton}
+                      >
+                        <RefreshCw size={13} style={{ marginRight: '6px' }} />
+                        WhatsApp
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           )}
         </div>
@@ -732,67 +794,112 @@ export default function Home() {
             <div style={styles.analyticsContainer}>
               {/* Summary Cards */}
               <div style={styles.summaryCards}>
-                <div style={styles.summaryCard}>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  style={{ ...styles.summaryCard, background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.08) 100%)' }}
+                >
+                  <div style={styles.summaryCardIcon}>
+                    <ClipboardList size={18} color="#6366f1" />
+                  </div>
                   <div style={styles.summaryValue}>{analytics.totalOrders}</div>
                   <div style={styles.summaryLabel}>Total Orders</div>
-                </div>
-                <div style={styles.summaryCard}>
-                  <div style={styles.summaryValue}>{analytics.totalItems}</div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  style={{ ...styles.summaryCard, background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(20,184,166,0.08) 100%)' }}
+                >
+                  <div style={styles.summaryCardIcon}>
+                    <ShoppingCart size={18} color="#22c55e" />
+                  </div>
+                  <div style={{ ...styles.summaryValue, color: '#22c55e' }}>{analytics.totalItems}</div>
                   <div style={styles.summaryLabel}>Total Items</div>
-                </div>
+                </motion.div>
               </div>
 
-              {/* Product Sales Bar Chart */}
-              <div style={styles.analyticsSection}>
-                <h3 style={styles.analyticsTitle}>Products</h3>
+              {/* Product Sales Horizontal Bar Chart */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                style={styles.analyticsSection}
+              >
+                <div style={styles.analyticsSectionHeader}>
+                  <h3 style={styles.analyticsTitle}>Product Sales</h3>
+                  <span style={styles.analyticsBadge}>
+                    {Object.keys(analytics.byItem).length} products
+                  </span>
+                </div>
                 <div style={styles.chartCard}>
                   <ProductSalesBarChart data={analytics.byItem} />
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Category Distribution Donut Chart */}
-              <div style={styles.analyticsSection}>
-                <h3 style={styles.analyticsTitle}>Category Distribution</h3>
+              {/* Category Distribution */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                style={styles.analyticsSection}
+              >
+                <div style={styles.analyticsSectionHeader}>
+                  <h3 style={styles.analyticsTitle}>Category Breakdown</h3>
+                  <span style={styles.analyticsBadge}>
+                    {Object.keys(analytics.byCategory).length} categories
+                  </span>
+                </div>
                 <div style={styles.chartCard}>
                   <CategoryDistributionDonutChart data={analytics.byCategory} />
                 </div>
-              </div>
-
-              {/* By Category - Text List */}
-              <div style={styles.analyticsSection}>
-                <h3 style={styles.analyticsTitle}>By Category Details</h3>
-                {Object.entries(analytics.byCategory).map(([category, data]) => (
-                  <div key={category} style={styles.categoryAnalytics}>
-                    <div style={styles.categoryHeader}>
-                      <span style={styles.categoryName}>{category}</span>
-                      <span style={styles.categoryTotal}>{data.totalQuantity} items</span>
-                    </div>
-                    <div style={styles.categoryItems}>
-                      {Object.entries(data.items).map(([itemName, quantity]) => (
-                        <div key={itemName} style={styles.itemStat}>
-                          <span style={styles.itemName}>{itemName}</span>
-                          <span style={styles.itemQuantity}>{quantity}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              </motion.div>
 
               {/* By Person */}
               {Object.keys(analytics.byPerson).length > 0 && (
-                <div style={styles.analyticsSection}>
-                  <h3 style={styles.analyticsTitle}>By Person</h3>
-                  {Object.entries(analytics.byPerson).map(([person, data]) => (
-                    <div key={person} style={styles.personStat}>
-                      <span style={styles.personName}>{person}</span>
-                      <div style={styles.personStats}>
-                        <span style={styles.personStatItem}>{data.orders} orders</span>
-                        <span style={styles.personStatItem}>{data.items} items</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  style={styles.analyticsSection}
+                >
+                  <div style={styles.analyticsSectionHeader}>
+                    <h3 style={styles.analyticsTitle}>Ordered By</h3>
+                    <span style={styles.analyticsBadge}>
+                      {Object.keys(analytics.byPerson).length} people
+                    </span>
+                  </div>
+                  <div style={styles.personList}>
+                    {Object.entries(analytics.byPerson)
+                      .sort(([, a], [, b]) => b.items - a.items)
+                      .map(([person, pData], idx) => (
+                        <motion.div
+                          key={person}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: idx * 0.05 }}
+                          style={styles.personStat}
+                        >
+                          <div style={styles.personAvatar}>
+                            {person.charAt(0).toUpperCase()}
+                          </div>
+                          <div style={styles.personInfo}>
+                            <span style={styles.personName}>{person}</span>
+                            <div style={styles.personStats}>
+                              <span style={styles.personStatItem}>
+                                <span style={styles.personStatValue}>{pData.orders}</span> orders
+                              </span>
+                              <span style={styles.personStatDot}>•</span>
+                              <span style={styles.personStatItem}>
+                                <span style={styles.personStatValue}>{pData.items}</span> items
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                  </div>
+                </motion.div>
               )}
             </div>
           ) : (
@@ -1218,84 +1325,182 @@ const styles = {
   orderCard: {
     backgroundColor: 'var(--surface)',
     border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-md)',
-    padding: '16px',
+    borderRadius: 'var(--radius-sm)',
+    padding: '16px 20px',
     boxShadow: 'var(--shadow-sm)',
     display: 'flex',
     flexDirection: 'column',
     gap: '14px',
+    cursor: 'pointer',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   orderCardHeader: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: '8px',
   },
-  orderCardId: {
-    fontSize: '14px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
+  orderCardMeta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   },
-  orderCardDate: {
+  orderCardIdBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: 'var(--surface-secondary)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-xs)',
+    padding: '2px 8px',
+    fontFamily: 'var(--font-heading)',
+    fontWeight: '700',
+  },
+  orderIdHash: {
+    color: 'var(--text-muted)',
+    marginRight: '2px',
     fontSize: '11px',
-    color: 'var(--text-secondary)',
-    fontWeight: '500',
-    marginTop: '2px',
+  },
+  orderCardIdText: {
+    fontSize: '11px',
+    color: 'var(--text-primary)',
+    letterSpacing: '0.05em',
   },
   statusBadge: {
     fontSize: '10px',
     fontWeight: '800',
     padding: '3px 8px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--success-light)',
-    color: 'var(--success)',
+    display: 'flex',
+    alignItems: 'center',
     textTransform: 'uppercase',
-    letterSpacing: '0.02em',
+    letterSpacing: '0.04em',
+  },
+  orderTimeline: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '11px',
+    color: 'var(--text-secondary)',
+    fontWeight: '600',
+  },
+  orderTimeItem: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  timelineSeparator: {
+    color: 'var(--text-muted)',
+    fontSize: '8px',
   },
   orderStoreInfo: {
     display: 'flex',
     alignItems: 'center',
+    gap: '12px',
+  },
+  orderAvatar: {
+    width: '38px',
+    height: '38px',
+    borderRadius: 'var(--radius-full)',
+    background: 'linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%)',
+    color: '#ffffff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     fontSize: '13px',
-    color: 'var(--text-primary)',
+    fontWeight: '800',
+    boxShadow: '0 4px 10px rgba(99, 102, 241, 0.15)',
+    flexShrink: 0,
+  },
+  orderStoreDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  orderStoreName: {
+    fontSize: '14px',
     fontWeight: '700',
+    color: 'var(--text-primary)',
+  },
+  orderStoreSubtitle: {
+    fontSize: '10px',
+    color: 'var(--text-muted)',
+    fontWeight: '500',
   },
   orderItemsSummary: {
     backgroundColor: 'var(--surface-secondary)',
-    padding: '10px 14px',
+    padding: '12px 14px',
     borderRadius: 'var(--radius-sm)',
-    fontSize: '12px',
     border: '1px solid var(--border)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  summaryLabelRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   summaryLabel: {
-    fontWeight: '700',
+    fontWeight: '800',
     color: 'var(--text-secondary)',
-    marginBottom: '6px',
-    fontSize: '11px',
+    fontSize: '10px',
     textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  summaryLabelCount: {
+    fontSize: '10px',
+    fontWeight: '700',
+    color: 'var(--text-muted)',
+    backgroundColor: 'var(--surface)',
+    border: '1px solid var(--border)',
+    padding: '1px 6px',
+    borderRadius: 'var(--radius-xs)',
   },
   orderItemsInlineList: {
     display: 'flex',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     gap: '6px',
   },
-  summaryItemToken: {
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--border)',
-    padding: '2px 8px',
-    borderRadius: 'var(--radius-xs)',
+  summaryItemRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    fontSize: '12px',
     color: 'var(--text-primary)',
     fontWeight: '600',
   },
-  summaryItemTokenMore: {
+  summaryItemBullet: {
+    color: 'var(--text-muted)',
+    marginRight: '6px',
+    fontSize: '10px',
+    display: 'none',
+  },
+  summaryItemName: {
+    color: 'var(--text-primary)',
+    fontWeight: '600',
+  },
+  summaryItemQty: {
     color: 'var(--accent)',
-    fontWeight: '700',
-    padding: '2px 4px',
+    backgroundColor: 'var(--accent-light)',
+    fontSize: '10px',
+    fontWeight: '800',
+    padding: '2px 8px',
+    borderRadius: 'var(--radius-xs)',
+    border: '1px solid rgba(99, 102, 241, 0.15)',
+  },
+  summaryItemRowMore: {
+    fontSize: '11px',
+    color: 'var(--text-muted)',
+    fontWeight: '600',
+    paddingTop: '2px',
+    borderTop: '1px dashed var(--border)',
+    textAlign: 'center',
   },
   orderNotesBlock: {
     fontSize: '12px',
     color: 'var(--text-secondary)',
     backgroundColor: 'var(--accent-light)',
     borderLeft: '4px solid var(--accent)',
-    padding: '8px 12px',
+    padding: '10px 14px',
     borderRadius: 'var(--radius-xs)',
     display: 'flex',
     alignItems: 'flex-start',
@@ -1303,44 +1508,55 @@ const styles = {
   },
   orderCardFooter: {
     display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     borderTop: '1px solid var(--border)',
     paddingTop: '12px',
+    marginTop: '4px',
+  },
+  secondaryActions: {
+    display: 'flex',
+    gap: '8px',
   },
   resendWhatsAppButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid var(--border)',
-    color: 'var(--text-secondary)',
-    padding: '8px 14px',
+    backgroundColor: '#25D366',
+    color: '#ffffff',
+    padding: '8px 16px',
     borderRadius: 'var(--radius-full)',
     fontSize: '12px',
-    fontWeight: '700',
+    fontWeight: '800',
+    border: 'none',
+    boxShadow: '0 4px 10px rgba(37, 211, 102, 0.2)',
+    transition: 'all 0.2s ease',
   },
   cancelButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid var(--danger)',
+    border: '1px solid var(--border)',
     color: 'var(--danger)',
     padding: '8px 14px',
     borderRadius: 'var(--radius-full)',
     fontSize: '12px',
     fontWeight: '700',
+    backgroundColor: 'transparent',
+    transition: 'all 0.2s ease',
   },
   reorderButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'var(--accent-light)',
-    color: 'var(--accent)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
     padding: '8px 14px',
     borderRadius: 'var(--radius-full)',
     fontSize: '12px',
     fontWeight: '700',
-    border: 'none',
+    backgroundColor: 'var(--surface-secondary)',
+    transition: 'all 0.2s ease',
   },
   confirmOverlay: {
     position: 'fixed',
@@ -1440,9 +1656,21 @@ const styles = {
     gap: '12px',
   },
   summaryCard: {
-    backgroundColor: 'var(--surface-secondary)',
     borderRadius: 'var(--radius-md)',
     padding: '16px',
+    border: '1px solid var(--border)',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  summaryCardIcon: {
+    width: '34px',
+    height: '34px',
+    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--surface)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '10px',
     border: '1px solid var(--border)',
   },
   summaryValue: {
@@ -1462,10 +1690,25 @@ const styles = {
     flexDirection: 'column',
     gap: '12px',
   },
+  analyticsSectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   analyticsTitle: {
     fontSize: '16px',
     fontWeight: '800',
     color: 'var(--text-primary)',
+    margin: 0,
+  },
+  analyticsBadge: {
+    fontSize: '11px',
+    fontWeight: '700',
+    color: 'var(--text-secondary)',
+    backgroundColor: 'var(--surface-secondary)',
+    padding: '4px 10px',
+    borderRadius: 'var(--radius-full)',
+    border: '1px solid var(--border)',
   },
   chartCard: {
     backgroundColor: 'var(--surface)',
@@ -1473,71 +1716,61 @@ const styles = {
     padding: '16px',
     border: '1px solid var(--border)',
     boxShadow: 'var(--shadow-sm)',
-    height: '300px',
   },
-  categoryAnalytics: {
-    backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-md)',
-    padding: '12px',
-    border: '1px solid var(--border)',
-  },
-  categoryHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '8px',
-    paddingBottom: '8px',
-    borderBottom: '1px solid var(--border)',
-  },
-  categoryName: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-  },
-  categoryTotal: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: 'var(--accent)',
-  },
-  categoryItems: {
+  personList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
-  },
-  itemStat: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '13px',
-  },
-  itemName: {
-    color: 'var(--text-primary)',
-    fontWeight: '500',
-  },
-  itemQuantity: {
-    color: 'var(--text-secondary)',
-    fontWeight: '700',
+    gap: '8px',
   },
   personStat: {
     backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-sm)',
-    padding: '10px 12px',
+    borderRadius: 'var(--radius-md)',
+    padding: '12px 14px',
     border: '1px solid var(--border)',
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: '12px',
+  },
+  personAvatar: {
+    width: '36px',
+    height: '36px',
+    borderRadius: 'var(--radius-full)',
+    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    color: '#ffffff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '14px',
+    fontWeight: '800',
+    flexShrink: 0,
+  },
+  personInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    flex: 1,
   },
   personName: {
-    fontSize: '13px',
+    fontSize: '14px',
     fontWeight: '700',
     color: 'var(--text-primary)',
   },
   personStats: {
     display: 'flex',
-    gap: '12px',
+    alignItems: 'center',
+    gap: '6px',
   },
   personStatItem: {
     fontSize: '12px',
     color: 'var(--text-secondary)',
-    fontWeight: '600',
+    fontWeight: '500',
+  },
+  personStatValue: {
+    fontWeight: '700',
+    color: 'var(--text-primary)',
+  },
+  personStatDot: {
+    fontSize: '8px',
+    color: 'var(--text-muted)',
   },
 };

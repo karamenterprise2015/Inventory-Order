@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 
-export default function QuantitySelector({ quantity, onChange, unit = 'unit' }) {
+export default function QuantitySelector({ quantity, onChange, unit = null }) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(quantity.toString());
 
@@ -114,7 +114,7 @@ export default function QuantitySelector({ quantity, onChange, unit = 'unit' }) 
                   </motion.span>
                 )}
               </AnimatePresence>
-              {!isEditing && <span style={styles.unitText}>{unit}</span>}
+              {!isEditing && unit && <span style={styles.unitText}>{unit}</span>}
             </div>
 
             {/* Plus Button */}
