@@ -611,48 +611,40 @@ export default function Home() {
                 const dateStr = orderDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
                 const timeStr = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+                const isCancelled = order.status === 'Cancelled';
+
                 return (
                   <motion.div
                     key={order.id}
                     variants={itemVariants}
-                    style={styles.orderCard}
+                    style={{
+                      ...styles.orderCard,
+                      borderLeft: isCancelled ? '3px solid var(--text-muted)' : '3px solid var(--success)',
+                    }}
                     onClick={() => setOrderToView(order)}
-                    whileHover={{ y: -2, boxShadow: 'var(--shadow-md)' }}
+                    whileHover={{ y: -1, boxShadow: 'var(--shadow-md)' }}
                     whileTap={{ scale: 0.99 }}
                   >
                     <div style={styles.orderCardHeader}>
                       <div style={styles.orderCardMeta}>
-                        <div style={styles.orderCardIdBadge}>
-                          <span style={styles.orderIdHash}>#</span>
-                          <span style={styles.orderCardIdText}>{order.id.slice(-6).toUpperCase()}</span>
-                        </div>
+                        <span style={styles.orderCardIdText}>#{order.id.slice(-6).toUpperCase()}</span>
                         <span style={{
                           ...styles.statusBadge,
-                          backgroundColor: order.status === 'Cancelled' ? 'var(--danger-light)' : 'var(--success-light)',
-                          color: order.status === 'Cancelled' ? 'var(--danger)' : 'var(--success)',
+                          backgroundColor: isCancelled ? 'var(--danger-light)' : 'var(--success-light)',
+                          color: isCancelled ? 'var(--danger)' : 'var(--success)',
                         }}>
                           <span style={{
-                            width: '6px',
-                            height: '6px',
+                            width: '5px',
+                            height: '5px',
                             borderRadius: '50%',
-                            backgroundColor: order.status === 'Cancelled' ? 'var(--danger)' : 'var(--success)',
+                            backgroundColor: isCancelled ? 'var(--danger)' : 'var(--success)',
                             display: 'inline-block',
-                            marginRight: '6px',
+                            marginRight: '5px',
                           }} />
                           {order.status}
                         </span>
                       </div>
-                      <div style={styles.orderTimeline}>
-                        <div style={styles.orderTimeItem}>
-                          <Calendar size={12} style={{ marginRight: '4px', color: 'var(--text-muted)' }} />
-                          <span>{dateStr}</span>
-                        </div>
-                        <span style={styles.timelineSeparator}>•</span>
-                        <div style={styles.orderTimeItem}>
-                          <Clock size={12} style={{ marginRight: '4px', color: 'var(--text-muted)' }} />
-                          <span>{timeStr}</span>
-                        </div>
-                      </div>
+                      <span style={styles.orderCardDate}>{dateStr} • {timeStr}</span>
                     </div>
 
                     <div style={styles.orderStoreInfo}>
@@ -661,20 +653,19 @@ export default function Home() {
                       </div>
                       <div style={styles.orderStoreDetails}>
                         <span style={styles.orderStoreName}>{order.personName}</span>
-                        <span style={styles.orderStoreSubtitle}>Delivery Order Request</span>
+                        <span style={styles.orderStoreSubtitle}>Order Sheet Request</span>
                       </div>
                     </div>
 
                     {/* Summary of items */}
                     <div style={styles.orderItemsSummary}>
                       <div style={styles.summaryLabelRow}>
-                        <span style={styles.summaryLabel}>Items List</span>
+                        <span style={styles.summaryLabel}>Order Preview</span>
                         <span style={styles.summaryLabelCount}>{order.totalItems} {order.totalItems === 1 ? 'item' : 'items'}</span>
                       </div>
                       <div style={styles.orderItemsInlineList}>
                         {order.items.slice(0, 3).map((it, idx) => (
                           <div key={idx} style={styles.summaryItemRow}>
-                            <span style={styles.summaryItemBullet}>▸</span>
                             <span style={styles.summaryItemName}>{it.name}</span>
                             <span style={styles.summaryItemQty}>
                               {it.quantity}{it.unit || ''}
@@ -683,7 +674,7 @@ export default function Home() {
                         ))}
                         {order.items.length > 3 && (
                           <div style={styles.summaryItemRowMore}>
-                            <span>and {order.items.length - 3} more items</span>
+                            <span>+ {order.items.length - 3} more products</span>
                           </div>
                         )}
                       </div>
@@ -691,9 +682,8 @@ export default function Home() {
 
                     {order.notes && (
                       <div style={styles.orderNotesBlock}>
-                        <FileText size={14} style={{ marginRight: '8px', marginTop: '2px', color: 'var(--accent)', flexShrink: 0 }} />
                         <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.4' }}>
-                          <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>Delivery Instructions: </span>
+                          <span style={{ fontWeight: '700', color: 'var(--text-secondary)' }}>Notes: </span>
                           {order.notes}
                         </p>
                       </div>
@@ -702,34 +692,32 @@ export default function Home() {
                     {/* Order Footer card actions */}
                     <div style={styles.orderCardFooter}>
                       <div style={styles.secondaryActions}>
-                        {order.status !== 'Cancelled' && (
+                        {!isCancelled && (
                           <motion.button
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={{ scale: 0.96 }}
                             onClick={(e) => {
                               e.stopPropagation();
                               setOrderToCancel(order);
                             }}
                             style={styles.cancelButton}
                           >
-                            <X size={13} style={{ marginRight: '4px' }} />
                             Cancel
                           </motion.button>
                         )}
                         <motion.button
-                          whileTap={{ scale: 0.95 }}
+                          whileTap={{ scale: 0.96 }}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleReorder(order);
                           }}
                           style={styles.reorderButton}
                         >
-                          <ShoppingCart size={13} style={{ marginRight: '4px' }} />
                           Reorder
                         </motion.button>
                       </div>
 
                       <motion.button
-                        whileTap={{ scale: 0.95 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={(e) => {
                           e.stopPropagation();
                           const wText = formatWhatsAppMessage(order);
@@ -737,8 +725,7 @@ export default function Home() {
                         }}
                         style={styles.resendWhatsAppButton}
                       >
-                        <RefreshCw size={13} style={{ marginRight: '6px' }} />
-                        WhatsApp
+                        Send to WhatsApp
                       </motion.button>
                     </div>
                   </motion.div>
@@ -795,27 +782,27 @@ export default function Home() {
               {/* Summary Cards */}
               <div style={styles.summaryCards}>
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  style={{ ...styles.summaryCard, background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.08) 100%)' }}
+                  style={{
+                    ...styles.summaryCard,
+                    borderTop: '3px solid var(--accent)',
+                  }}
                 >
-                  <div style={styles.summaryCardIcon}>
-                    <ClipboardList size={18} color="#6366f1" />
-                  </div>
                   <div style={styles.summaryValue}>{analytics.totalOrders}</div>
                   <div style={styles.summaryLabel}>Total Orders</div>
                 </motion.div>
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  style={{ ...styles.summaryCard, background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(20,184,166,0.08) 100%)' }}
+                  style={{
+                    ...styles.summaryCard,
+                    borderTop: '3px solid var(--success)',
+                  }}
                 >
-                  <div style={styles.summaryCardIcon}>
-                    <ShoppingCart size={18} color="#22c55e" />
-                  </div>
-                  <div style={{ ...styles.summaryValue, color: '#22c55e' }}>{analytics.totalItems}</div>
+                  <div style={{ ...styles.summaryValue, color: 'var(--success)' }}>{analytics.totalItems}</div>
                   <div style={styles.summaryLabel}>Total Items</div>
                 </motion.div>
               </div>
@@ -1326,47 +1313,32 @@ const styles = {
     backgroundColor: 'var(--surface)',
     border: '1px solid var(--border)',
     borderRadius: 'var(--radius-sm)',
-    padding: '16px 20px',
+    padding: '16px',
     boxShadow: 'var(--shadow-sm)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '14px',
+    gap: '12px',
     cursor: 'pointer',
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'all 0.15s ease-in-out',
   },
   orderCardHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '8px',
   },
   orderCardMeta: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
   },
-  orderCardIdBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: 'var(--surface-secondary)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-xs)',
-    padding: '2px 8px',
-    fontFamily: 'var(--font-heading)',
-    fontWeight: '700',
-  },
-  orderIdHash: {
-    color: 'var(--text-muted)',
-    marginRight: '2px',
-    fontSize: '11px',
-  },
   orderCardIdText: {
-    fontSize: '11px',
+    fontFamily: 'var(--font-heading)',
+    fontSize: '13px',
+    fontWeight: '700',
     color: 'var(--text-primary)',
-    letterSpacing: '0.05em',
   },
   statusBadge: {
-    fontSize: '10px',
+    fontSize: '9px',
     fontWeight: '800',
     padding: '3px 8px',
     borderRadius: 'var(--radius-full)',
@@ -1375,49 +1347,38 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
   },
-  orderTimeline: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
+  orderCardDate: {
     fontSize: '11px',
     color: 'var(--text-secondary)',
     fontWeight: '600',
   },
-  orderTimeItem: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  timelineSeparator: {
-    color: 'var(--text-muted)',
-    fontSize: '8px',
-  },
   orderStoreInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '10px',
   },
   orderAvatar: {
-    width: '38px',
-    height: '38px',
+    width: '32px',
+    height: '32px',
     borderRadius: 'var(--radius-full)',
-    background: 'linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%)',
-    color: '#ffffff',
+    backgroundColor: 'var(--surface-secondary)',
+    border: '1px solid var(--border)',
+    color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '13px',
-    fontWeight: '800',
-    boxShadow: '0 4px 10px rgba(99, 102, 241, 0.15)',
+    fontSize: '11px',
+    fontWeight: '700',
     flexShrink: 0,
   },
   orderStoreDetails: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: '1px',
   },
   orderStoreName: {
-    fontSize: '14px',
-    fontWeight: '700',
+    fontSize: '13px',
+    fontWeight: '600',
     color: 'var(--text-primary)',
   },
   orderStoreSubtitle: {
@@ -1427,12 +1388,12 @@ const styles = {
   },
   orderItemsSummary: {
     backgroundColor: 'var(--surface-secondary)',
-    padding: '12px 14px',
-    borderRadius: 'var(--radius-sm)',
+    padding: '10px 12px',
+    borderRadius: 'var(--radius-xs)',
     border: '1px solid var(--border)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
   },
   summaryLabelRow: {
     display: 'flex',
@@ -1440,7 +1401,7 @@ const styles = {
     alignItems: 'center',
   },
   summaryLabel: {
-    fontWeight: '800',
+    fontWeight: '700',
     color: 'var(--text-secondary)',
     fontSize: '10px',
     textTransform: 'uppercase',
@@ -1450,15 +1411,11 @@ const styles = {
     fontSize: '10px',
     fontWeight: '700',
     color: 'var(--text-muted)',
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--border)',
-    padding: '1px 6px',
-    borderRadius: 'var(--radius-xs)',
   },
   orderItemsInlineList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: '4px',
   },
   summaryItemRow: {
     display: 'flex',
@@ -1466,44 +1423,28 @@ const styles = {
     justifyContent: 'space-between',
     fontSize: '12px',
     color: 'var(--text-primary)',
-    fontWeight: '600',
-  },
-  summaryItemBullet: {
-    color: 'var(--text-muted)',
-    marginRight: '6px',
-    fontSize: '10px',
-    display: 'none',
   },
   summaryItemName: {
-    color: 'var(--text-primary)',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   summaryItemQty: {
-    color: 'var(--accent)',
-    backgroundColor: 'var(--accent-light)',
-    fontSize: '10px',
-    fontWeight: '800',
-    padding: '2px 8px',
-    borderRadius: 'var(--radius-xs)',
-    border: '1px solid rgba(99, 102, 241, 0.15)',
+    fontWeight: '700',
+    color: 'var(--text-primary)',
   },
   summaryItemRowMore: {
     fontSize: '11px',
     color: 'var(--text-muted)',
-    fontWeight: '600',
-    paddingTop: '2px',
+    fontWeight: '500',
+    paddingTop: '4px',
     borderTop: '1px dashed var(--border)',
-    textAlign: 'center',
   },
   orderNotesBlock: {
     fontSize: '12px',
     color: 'var(--text-secondary)',
-    backgroundColor: 'var(--accent-light)',
-    borderLeft: '4px solid var(--accent)',
-    padding: '10px 14px',
+    backgroundColor: 'var(--surface-secondary)',
+    borderLeft: '3px solid var(--border)',
+    padding: '8px 12px',
     borderRadius: 'var(--radius-xs)',
-    display: 'flex',
-    alignItems: 'flex-start',
     lineHeight: '1.4',
   },
   orderCardFooter: {
@@ -1511,26 +1452,25 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTop: '1px solid var(--border)',
-    paddingTop: '12px',
+    paddingTop: '10px',
     marginTop: '4px',
   },
   secondaryActions: {
     display: 'flex',
-    gap: '8px',
+    gap: '6px',
   },
   resendWhatsAppButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#25D366',
+    backgroundColor: '#128c7e',
     color: '#ffffff',
-    padding: '8px 16px',
-    borderRadius: 'var(--radius-full)',
-    fontSize: '12px',
-    fontWeight: '800',
+    padding: '6px 12px',
+    borderRadius: 'var(--radius-xs)',
+    fontSize: '11px',
+    fontWeight: '700',
     border: 'none',
-    boxShadow: '0 4px 10px rgba(37, 211, 102, 0.2)',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.15s ease',
   },
   cancelButton: {
     display: 'flex',
@@ -1538,12 +1478,12 @@ const styles = {
     justifyContent: 'center',
     border: '1px solid var(--border)',
     color: 'var(--danger)',
-    padding: '8px 14px',
-    borderRadius: 'var(--radius-full)',
-    fontSize: '12px',
-    fontWeight: '700',
+    padding: '6px 12px',
+    borderRadius: 'var(--radius-xs)',
+    fontSize: '11px',
+    fontWeight: '600',
     backgroundColor: 'transparent',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.15s ease',
   },
   reorderButton: {
     display: 'flex',
@@ -1551,12 +1491,12 @@ const styles = {
     justifyContent: 'center',
     border: '1px solid var(--border)',
     color: 'var(--text-primary)',
-    padding: '8px 14px',
-    borderRadius: 'var(--radius-full)',
-    fontSize: '12px',
-    fontWeight: '700',
-    backgroundColor: 'var(--surface-secondary)',
-    transition: 'all 0.2s ease',
+    padding: '6px 12px',
+    borderRadius: 'var(--radius-xs)',
+    fontSize: '11px',
+    fontWeight: '600',
+    backgroundColor: 'var(--surface)',
+    transition: 'all 0.15s ease',
   },
   confirmOverlay: {
     position: 'fixed',
@@ -1656,34 +1596,26 @@ const styles = {
     gap: '12px',
   },
   summaryCard: {
-    borderRadius: 'var(--radius-md)',
+    backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-xs)',
     padding: '16px',
     border: '1px solid var(--border)',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  summaryCardIcon: {
-    width: '34px',
-    height: '34px',
-    borderRadius: 'var(--radius-sm)',
-    backgroundColor: 'var(--surface)',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '10px',
-    border: '1px solid var(--border)',
+    flexDirection: 'column',
+    gap: '2px',
   },
   summaryValue: {
-    fontSize: '28px',
+    fontSize: '24px',
     fontWeight: '800',
-    color: 'var(--accent)',
-    lineHeight: '1',
+    color: 'var(--text-primary)',
+    lineHeight: '1.2',
   },
   summaryLabel: {
-    fontSize: '12px',
-    color: 'var(--text-secondary)',
-    fontWeight: '600',
-    marginTop: '4px',
+    fontSize: '10px',
+    color: 'var(--text-muted)',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
   },
   analyticsSection: {
     display: 'flex',

@@ -3,9 +3,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+// Designer-curated cohesive palette: Indigo, Violet, Slate, and Blue shades
 const COLORS = [
-  '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899',
-  '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6',
+  '#4f46e5', // Accent Indigo
+  '#8b5cf6', // Violet
+  '#3b82f6', // Slate Blue
+  '#0f172a', // Deep Charcoal
+  '#64748b', // Cool Slate
+  '#a855f7', // Purple
+  '#06b6d4', // Cyan
+  '#94a3b8', // Slate Muted
 ];
 
 export default function CategoryDistributionDonutChart({ data }) {
@@ -27,9 +34,9 @@ export default function CategoryDistributionDonutChart({ data }) {
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  // SVG Donut
-  const radius = 60;
-  const strokeWidth = 18;
+  // SVG Donut Config
+  const radius = 64;
+  const strokeWidth = 14; // Sleeker ring
   const circumference = 2 * Math.PI * radius;
   let cumulativeOffset = 0;
 
@@ -37,7 +44,7 @@ export default function CategoryDistributionDonutChart({ data }) {
     <div style={styles.container}>
       {/* Donut Chart */}
       <div style={styles.donutWrapper}>
-        <svg width="160" height="160" viewBox="0 0 160 160" style={{ overflow: 'visible' }}>
+        <svg width="150" height="150" viewBox="0 0 150 150" style={{ overflow: 'visible' }}>
           {chartData.map((item, index) => {
             const percentage = item.value / total;
             const dashLength = circumference * percentage;
@@ -48,8 +55,8 @@ export default function CategoryDistributionDonutChart({ data }) {
             return (
               <motion.circle
                 key={item.name}
-                cx="80"
-                cy="80"
+                cx="75"
+                cy="75"
                 r={radius}
                 fill="none"
                 stroke={COLORS[index % COLORS.length]}
@@ -59,17 +66,17 @@ export default function CategoryDistributionDonutChart({ data }) {
                 strokeLinecap="round"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                style={{ transform: 'rotate(-90deg)', transformOrigin: '80px 80px' }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                style={{ transform: 'rotate(-90deg)', transformOrigin: '75px 75px' }}
               />
             );
           })}
-          {/* Center text */}
-          <text x="80" y="74" textAnchor="middle" style={{ fill: 'var(--text-primary)', fontSize: '22px', fontWeight: '800' }}>
+          {/* Center Text labels */}
+          <text x="75" y="70" textAnchor="middle" style={{ fill: 'var(--text-primary)', fontSize: '20px', fontWeight: '800', fontFamily: 'var(--font-heading)' }}>
             {total}
           </text>
-          <text x="80" y="92" textAnchor="middle" style={{ fill: 'var(--text-secondary)', fontSize: '11px', fontWeight: '600' }}>
-            Total Items
+          <text x="75" y="88" textAnchor="middle" style={{ fill: 'var(--text-secondary)', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Items Total
           </text>
         </svg>
       </div>
@@ -81,9 +88,9 @@ export default function CategoryDistributionDonutChart({ data }) {
           return (
             <motion.div
               key={item.name}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.06 }}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               style={styles.legendItem}
             >
               <div style={styles.legendLeft}>
@@ -107,45 +114,43 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '20px',
+    gap: '24px',
     width: '100%',
   },
   emptyState: {
-    height: 200,
+    height: 160,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: 'var(--text-muted)',
-    fontSize: '14px',
+    fontSize: '13px',
   },
   donutWrapper: {
     display: 'flex',
     justifyContent: 'center',
-    padding: '8px 0',
+    padding: '12px 0',
   },
   legendList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '2px', // Tighter layout
     width: '100%',
   },
   legendItem: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '8px 12px',
-    backgroundColor: 'var(--surface-secondary)',
-    borderRadius: '10px',
-    border: '1px solid var(--border)',
+    padding: '8px 4px',
+    borderBottom: '1px solid var(--border)',
   },
   legendLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '10px',
   },
   legendDot: {
-    width: '10px',
-    height: '10px',
+    width: '8px',
+    height: '8px',
     borderRadius: '50%',
     flexShrink: 0,
   },
@@ -157,20 +162,20 @@ const styles = {
   legendRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '12px',
   },
   legendValue: {
-    fontSize: '14px',
-    fontWeight: '800',
+    fontSize: '13px',
+    fontWeight: '700',
     color: 'var(--text-primary)',
   },
   legendPercent: {
-    fontSize: '11px',
-    fontWeight: '600',
+    fontSize: '10px',
+    fontWeight: '700',
     color: 'var(--text-secondary)',
-    backgroundColor: 'var(--surface)',
-    padding: '2px 7px',
-    borderRadius: '20px',
+    backgroundColor: 'var(--surface-secondary)',
+    padding: '2px 8px',
+    borderRadius: 'var(--radius-full)',
     minWidth: '36px',
     textAlign: 'center',
   },
