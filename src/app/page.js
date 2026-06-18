@@ -17,7 +17,9 @@ import {
   X,
   BarChart3,
   Clock,
-  Calendar
+  Calendar,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import BottomNavigation from '@/components/BottomNavigation';
 import QuantitySelector from '@/components/QuantitySelector';
@@ -60,6 +62,7 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [theme, setTheme] = useState('light');
+  const [showPrice, setShowPrice] = useState(false);
   
   // Order submission statuses
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -425,6 +428,25 @@ export default function Home() {
             <Sun size={18} strokeWidth={2.5} />
           )}
         </motion.button>
+
+        {/* Price visibility toggle */}
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowPrice(!showPrice)}
+          style={{
+            ...styles.themeToggle,
+            marginLeft: '8px',
+            backgroundColor: showPrice ? 'var(--accent)' : 'var(--surface)',
+            color: showPrice ? '#ffffff' : 'var(--text-secondary)',
+          }}
+          aria-label="Toggle price visibility"
+        >
+          {showPrice ? (
+            <Eye size={18} strokeWidth={2.5} />
+          ) : (
+            <EyeOff size={18} strokeWidth={2.5} />
+          )}
+        </motion.button>
       </header>
 
       {/* Primary Panels views */}
@@ -549,6 +571,9 @@ export default function Home() {
                             <div style={styles.productInfo}>
                               <h4 style={styles.productName}>{item.name}</h4>
                               {item.unit && <span style={styles.productUnitBadge}>{item.unit}</span>}
+                              {showPrice && item.price && (
+                                <span style={styles.priceBadge}>₹{item.price.toFixed(2)}</span>
+                              )}
                             </div>
                             <div style={styles.selectorWrapper}>
                               <QuantitySelector
@@ -1247,6 +1272,16 @@ const styles = {
     borderRadius: 'var(--radius-full)',
     width: 'fit-content',
     letterSpacing: '0.04em',
+  },
+  priceBadge: {
+    fontSize: '11px',
+    fontWeight: '700',
+    color: 'var(--success)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    padding: '3px 8px',
+    borderRadius: 'var(--radius-sm)',
+    marginTop: '4px',
+    display: 'inline-block',
   },
   selectorWrapper: {
     flexShrink: 0,
