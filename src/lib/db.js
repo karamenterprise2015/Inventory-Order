@@ -5,9 +5,9 @@ import { supabase } from './supabase.js';
 
 const INITIAL_ITEMS = [
   // Bakery
-  { id: '1', name: 'Burger Bun', category: 'Bakery', unit: 6.75, image: 'https://natashaskitchen.com/wp-content/uploads/2024/05/Burger-Buns-4.jpg', price: null },
-  { id: '2', name: 'Pizza ', category: 'Bakery', unit: 19, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKeb7exNWkqx2mBz9hpgLmvlNqI5kUGkRiEosYy_1lMw&s=10', price: null },
-  { id: '3', name: 'Jambo', category: 'Bakery', unit: 57, image: 'https://www.girlversusdough.com/wp-content/uploads/2025/05/sandwich-bread-two-slices.jpg', price: null },
+  { id: '1', name: 'Burger Bun', category: 'Bakery', unit: null, image: 'https://natashaskitchen.com/wp-content/uploads/2024/05/Burger-Buns-4.jpg', price: 6.75 },
+  { id: '2', name: 'Pizza ', category: 'Bakery', unit: null, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKeb7exNWkqx2mBz9hpgLmvlNqI5kUGkRiEosYy_1lMw&s=10', price: 19 },
+  { id: '3', name: 'Jambo', category: 'Bakery', unit: null, image: 'https://www.girlversusdough.com/wp-content/uploads/2025/05/sandwich-bread-two-slices.jpg', price: 57 },
 
   // Milk Products
   { id: '4', name: 'Cheese Block', category: 'Milk Products', unit: 'box', image: 'https://5.imimg.com/data5/SELLER/Default/2026/2/582570991/TM/FK/AZ/89400533/image.jpeg', price: 6798.33 },
@@ -33,8 +33,8 @@ const INITIAL_ITEMS = [
   { id: '22', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/691d5aef911e761fe41d11f7ed8acec7.png', price: 236.50 },
 
   // Toppings
-  { id: '23', name: 'Black Olives', category: 'Toppings', unit: 'unit', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s', price: null },
-  { id: '24', name: 'Jalapeno', category: 'Toppings', unit: 'unit', image: 'https://www.kiranapoorti.com/image/cache/catalog/SARWAR%20JALAPINOS-225x225.jpeg', price: null },
+  { id: '23', name: 'Black Olives', category: 'Toppings', unit: 'jar', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s', price: null },
+  { id: '24', name: 'Jalapeno', category: 'Toppings', unit: 'jar', image: 'https://www.kiranapoorti.com/image/cache/catalog/SARWAR%20JALAPINOS-225x225.jpeg', price: null },
 
   // Frozen/Prepared Foods
   { id: '25', name: 'Tikki', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvjJXD77qjfaFYWCFh_u0R8ge0ClCc21YRtpC_frUI5Q&s=10', price: 855.60 },
@@ -45,7 +45,7 @@ const INITIAL_ITEMS = [
   // Packaging/Boxes
   { id: '29', name: 'Pizza Box', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/717u+nWAaTL._AC_UF894,1000_QL80_.jpg', price: 475.01 },
   { id: '30', name: 'Parcel Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/71nqJAlHjnL._AC_UF894,1000_QL80_.jpg', price: null },
-  { id: '31', name: 'Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://www.bbassets.com/media/uploads/p/l/40032979_4-heinz-tomato-ketchup.jpg', price: 204.75 },
+  { id: '31', name: 'Ketchup', category: 'Packaging/Boxes', unit: 'can', image: 'https://www.bbassets.com/media/uploads/p/l/40032979_4-heinz-tomato-ketchup.jpg', price: 195 },
 
   // Spices/Seasonings
   { id: '32', name: 'Peri Peri Masala', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1rr9FY5j2eam3mJb62JHrZCQCAv89AXWwX0kwR-Uriw&s=10', price: null },
@@ -58,7 +58,7 @@ const INITIAL_ITEMS = [
   { id: '37', name: 'Oil', category: 'Oils & Fats', unit: 'box', image: 'https://m.media-amazon.com/images/I/71XEWRivd9L._AC_UF350,350_QL80_.jpg', price: 1821.00 },
   { id: '38', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/butter/w/e/i/-original-imagz7ffvezgmzfk.jpeg?q=90', price: null },
   { id: '39', name: 'Paneer', category: 'Oils & Fats', unit: 'Gms', image: 'https://newsmeter.in/h-upload/2025/02/13/394708-20250213175015.webp', price: null },
- ];
+];
 
 // In-memory storage (resets on server restart) - fallback if Supabase not configured
 let orders = [];
@@ -158,7 +158,7 @@ export const db = {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .update({ 
+        .update({
           status: 'Cancelled',
           cancelled_at: new Date().toISOString()
         })

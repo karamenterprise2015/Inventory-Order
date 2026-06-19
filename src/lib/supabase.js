@@ -15,7 +15,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Create a mock client if credentials are missing to avoid build errors
 const createMockClient = () => {
-  const mockError = new Error('Supabase credentials not configured');
+  const mockError = { message: 'Supabase credentials not configured' };
   return {
     from: () => ({
       select: () => ({

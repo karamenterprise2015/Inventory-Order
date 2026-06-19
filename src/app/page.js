@@ -19,7 +19,11 @@ import {
   Clock,
   Calendar,
   Eye,
-  EyeOff
+  EyeOff,
+  MessageCircle,
+  CheckCircle2,
+  Copy,
+  Check
 } from 'lucide-react';
 import BottomNavigation from '@/components/BottomNavigation';
 import QuantitySelector from '@/components/QuantitySelector';
@@ -27,6 +31,7 @@ import CartDrawer from '@/components/CartDrawer';
 import ProductSalesBarChart from '@/components/ProductSalesBarChart';
 import CategoryDistributionDonutChart from '@/components/CategoryDistributionDonutChart';
 import ShowOrder from '@/components/ShowOrder';
+import AnalyticsDashboard from '@/components/AnalyticsDashboard';
 
 // Animation variants for staggered catalog entrance
 const catalogVariants = {
@@ -73,6 +78,10 @@ export default function Home() {
 
   // Show order details
   const [orderToView, setOrderToView] = useState(null);
+
+  // Confirmed order intermediate step (before WhatsApp)
+  const [confirmedOrder, setConfirmedOrder] = useState(null);
+  const [copiedToClipboard, setCopiedToClipboard] = useState(false);
 
   // Analytics state
   const [analytics, setAnalytics] = useState(null);
@@ -311,20 +320,12 @@ export default function Home() {
         setIsSuccess(true);
         fetchOrders(); // update orders history in background
 
-        // Dynamic WhatsApp Formatting
-        const whatsappText = formatWhatsAppMessage(data.order);
-        const encodedText = encodeURIComponent(whatsappText);
-        const whatsappUrl = `https://wa.me/?text=${encodedText}`;
-
-        setTimeout(() => {
-          setCart([]);
-          setIsSubmitting(false);
-          setIsSuccess(false);
-          setIsCartOpen(false);
-
-          // Launch WhatsApp redirect
-          window.open(whatsappUrl, '_blank');
-        }, 1400);
+        // Show confirmed overlay immediately — no delay
+        setCart([]);
+        setIsSubmitting(false);
+        setIsSuccess(false);
+        setIsCartOpen(false);
+        setConfirmedOrder(data.order);
       } else {
         alert(data.error || 'Failed to submit order');
         setIsSubmitting(false);
@@ -364,6 +365,42 @@ export default function Home() {
     }
 
     return msg;
+  };
+
+  // Send confirmed order to WhatsApp
+  const handleSendToWhatsApp = () => {
+    if (!confirmedOrder) return;
+    const whatsappText = formatWhatsAppMessage(confirmedOrder);
+    const encodedText = encodeURIComponent(whatsappText);
+    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+    window.open(whatsappUrl, '_blank');
+    setConfirmedOrder(null);
+  };
+
+  // Copy order text to clipboard
+  const handleCopyOrderText = async () => {
+    if (!confirmedOrder) return;
+    const text = formatWhatsAppMessage(confirmedOrder);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedToClipboard(true);
+      setTimeout(() => setCopiedToClipboard(false), 2000);
+    } catch {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      setCopiedToClipboard(true);
+      setTimeout(() => setCopiedToClipboard(false), 2000);
+    }
+  };
+
+  // Dismiss the confirmed order overlay
+  const handleDismissConfirmed = () => {
+    setConfirmedOrder(null);
   };
 
   const handleReorder = (order) => {
@@ -769,177 +806,16 @@ export default function Home() {
         </div>
       ) : (
         /* Analytics Panel view */
-        <div style={styles.contentWrap}>
-          <div style={styles.historyHeader}>
-            <h2 style={styles.sectionHeading}>Order Analytics</h2>
-          </div>
-
-          {/* Date Filter */}
-          <div style={styles.filterContainer}>
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              style={styles.filterSelect}
-            >
-              <option value={undefined}>All Months</option>
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i} value={i}>
-                  {new Date(2024, i).toLocaleString('default', { month: 'long' })}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              style={styles.filterSelect}
-            >
-              <option value={2024}>2024</option>
-              <option value={2025}>2025</option>
-              <option value={2026}>2026</option>
-            </select>
-          </div>
-
-          {analyticsLoading ? (
-            <div style={styles.loadingWrap}>
-              {[1, 2, 3].map((n) => (
-                <div key={n} style={styles.skeletonCard} className="animate-pulse">
-                  <div style={{ flex: 1 }}>
-                    <div style={{ height: '16px', width: '40%', borderRadius: 'var(--radius-xs)' }} className="skeleton" />
-                    <div style={{ height: '12px', width: '60%', marginTop: '8px', borderRadius: 'var(--radius-xs)' }} className="skeleton" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : analytics ? (
-            <div style={styles.analyticsContainer}>
-              {/* Summary Cards */}
-              <div style={styles.summaryCards}>
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
-                  whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
-                  style={{
-                    ...styles.summaryCard,
-                    borderColor: 'rgba(99, 102, 241, 0.2)',
-                    boxShadow: 'var(--shadow-3d)',
-                  }}
-                >
-                  <div style={styles.summaryValue}>{analytics.totalOrders}</div>
-                  <div style={styles.summaryLabel}>Total Orders</div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
-                  whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
-                  style={{
-                    ...styles.summaryCard,
-                    borderColor: 'rgba(16, 185, 129, 0.2)',
-                    boxShadow: 'var(--shadow-3d)',
-                  }}
-                >
-                  <div style={{ ...styles.summaryValue, color: 'var(--success)' }}>{analytics.totalItems}</div>
-                  <div style={styles.summaryLabel}>Total Items</div>
-                </motion.div>
-              </div>
-
-              {/* Product Sales Horizontal Bar Chart */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                style={styles.analyticsSection}
-              >
-                <div style={styles.analyticsSectionHeader}>
-                  <h3 style={styles.analyticsTitle}>Product Breakdown</h3>
-                  <span style={styles.analyticsBadge}>
-                    {Object.keys(analytics.byItem).length} products
-                  </span>
-                </div>
-                <div style={styles.chartCard}>
-                  <ProductSalesBarChart data={analytics.byItem} />
-                </div>
-              </motion.div>
-
-              {/* Category Distribution */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                style={styles.analyticsSection}
-              >
-                <div style={styles.analyticsSectionHeader}>
-                  <h3 style={styles.analyticsTitle}>Category Breakdown</h3>
-                  <span style={styles.analyticsBadge}>
-                    {Object.keys(analytics.byCategory).length} categories
-                  </span>
-                </div>
-                <div style={styles.chartCard}>
-                  <CategoryDistributionDonutChart data={analytics.byCategory} />
-                </div>
-              </motion.div>
-
-              {/* By Person */}
-              {Object.keys(analytics.byPerson).length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  style={styles.analyticsSection}
-                >
-                  <div style={styles.analyticsSectionHeader}>
-                    <h3 style={styles.analyticsTitle}>Ordered By</h3>
-                    <span style={styles.analyticsBadge}>
-                      {Object.keys(analytics.byPerson).length} people
-                    </span>
-                  </div>
-                  <div style={styles.personList}>
-                    {Object.entries(analytics.byPerson)
-                      .sort(([, a], [, b]) => b.items - a.items)
-                      .map(([person, pData], idx) => (
-                        <motion.div
-                          key={person}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: idx * 0.05 }}
-                          style={styles.personStat}
-                        >
-                          <div style={styles.personAvatar}>
-                            {person.charAt(0).toUpperCase()}
-                          </div>
-                          <div style={styles.personInfo}>
-                            <span style={styles.personName}>{person}</span>
-                            <div style={styles.personStats}>
-                              <span style={styles.personStatItem}>
-                                <span style={styles.personStatValue}>{pData.orders}</span> orders
-                              </span>
-                              <span style={styles.personStatDot}>•</span>
-                              <span style={styles.personStatItem}>
-                                <span style={styles.personStatValue}>{pData.items}</span> items
-                              </span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <div style={styles.emptyWrap}>
-              <div style={styles.emptyCircleIcon}>
-                <BarChart3 size={32} color="var(--text-muted)" />
-              </div>
-              <h3 style={{ marginTop: '16px', color: 'var(--text-primary)', fontSize: '16px', fontWeight: '800' }}>No Analytics Data</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', textAlign: 'center', marginTop: '6px', maxWidth: '240px' }}>
-                Place some orders to see analytics here.
-              </p>
-            </div>
-          )}
-        </div>
+        <AnalyticsDashboard
+          analytics={analytics}
+          orders={orders}
+          items={items}
+          loading={analyticsLoading}
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          selectedYear={selectedYear}
+          setSelectedYear={setSelectedYear}
+        />
       )}
 
       {/* Floating Bottom Drawer Cart Trigger Button (Only Catalog view when items exist) */}
@@ -992,6 +868,130 @@ export default function Home() {
         onCancel={handleCancelOrder}
         onReorder={handleReorder}
       />
+
+      {/* Order Confirmed Intermediate Overlay */}
+      <AnimatePresence>
+        {confirmedOrder && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleDismissConfirmed}
+              style={styles.confirmedOverlay}
+            />
+            {/* Centering wrapper - separate from motion so transforms don't conflict */}
+            <div style={styles.confirmedWrapper}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.88 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+              style={styles.confirmedCard}
+            >
+              {/* Close button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleDismissConfirmed}
+                style={styles.confirmedCloseBtn}
+                aria-label="Close confirmation"
+              >
+                <X size={18} strokeWidth={2.5} />
+              </motion.button>
+
+              {/* Success animation */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.1 }}
+                style={styles.confirmedIconCircle}
+              >
+                <CheckCircle2 size={40} strokeWidth={2} color="#ffffff" />
+              </motion.div>
+
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                style={styles.confirmedTitle}
+              >
+                Order Confirmed!
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                style={styles.confirmedSubtitle}
+              >
+                #{confirmedOrder.id?.slice(-6).toUpperCase()} • {confirmedOrder.totalItems || confirmedOrder.items?.length} items
+              </motion.p>
+
+              {/* Order summary preview */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                style={styles.confirmedSummary}
+              >
+                {confirmedOrder.items?.slice(0, 4).map((item, idx) => (
+                  <div key={idx} style={styles.confirmedSummaryRow}>
+                    <span style={styles.confirmedSummaryName}>{item.name}</span>
+                    <span style={styles.confirmedSummaryQty}>{item.quantity}{item.unit || ''}</span>
+                  </div>
+                ))}
+                {confirmedOrder.items?.length > 4 && (
+                  <div style={styles.confirmedSummaryMore}>
+                    + {confirmedOrder.items.length - 4} more items
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Primary WhatsApp button */}
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(37, 211, 102, 0.35)' }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleSendToWhatsApp}
+                style={styles.confirmedWhatsAppBtn}
+              >
+                <MessageCircle size={20} strokeWidth={2.5} style={{ marginRight: '10px' }} />
+                Send to WhatsApp
+              </motion.button>
+
+              {/* Secondary actions */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                style={styles.confirmedSecondaryActions}
+              >
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCopyOrderText}
+                  style={styles.confirmedCopyBtn}
+                >
+                  {copiedToClipboard ? (
+                    <><Check size={14} style={{ marginRight: '6px' }} /> Copied!</>
+                  ) : (
+                    <><Copy size={14} style={{ marginRight: '6px' }} /> Copy Order Text</>
+                  )}
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDismissConfirmed}
+                  style={styles.confirmedDismissBtn}
+                >
+                  Done
+                </motion.button>
+              </motion.div>
+            </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Navigation tabs */}
       <BottomNavigation
@@ -1760,5 +1760,168 @@ const styles = {
   personStatDot: {
     fontSize: '8px',
     color: 'var(--text-muted)',
+  },
+
+  // Order Confirmed Intermediate Overlay styles
+  confirmedOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(9, 13, 22, 0.6)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    zIndex: 3000,
+  },
+  confirmedWrapper: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 3001,
+    padding: '24px',
+    pointerEvents: 'none',
+  },
+  confirmedCard: {
+    width: '100%',
+    maxWidth: '380px',
+    backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '32px 24px 24px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    border: '1px solid var(--border)',
+    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.05)',
+    position: 'relative',
+    pointerEvents: 'auto',
+  },
+  confirmedCloseBtn: {
+    position: 'absolute',
+    top: '12px',
+    right: '12px',
+    width: '32px',
+    height: '32px',
+    borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--surface-secondary)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'var(--text-secondary)',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  confirmedIconCircle: {
+    width: '72px',
+    height: '72px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '20px',
+    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.3)',
+  },
+  confirmedTitle: {
+    fontSize: '22px',
+    fontWeight: '800',
+    color: 'var(--text-primary)',
+    marginBottom: '6px',
+    textAlign: 'center',
+  },
+  confirmedSubtitle: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: 'var(--text-secondary)',
+    marginBottom: '20px',
+    textAlign: 'center',
+  },
+  confirmedSummary: {
+    width: '100%',
+    backgroundColor: 'var(--surface-secondary)',
+    borderRadius: 'var(--radius-sm)',
+    padding: '12px 14px',
+    marginBottom: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  confirmedSummaryRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  confirmedSummaryName: {
+    fontSize: '13px',
+    fontWeight: '500',
+    color: 'var(--text-primary)',
+  },
+  confirmedSummaryQty: {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: 'var(--accent)',
+  },
+  confirmedSummaryMore: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: 'var(--text-muted)',
+    textAlign: 'center',
+    paddingTop: '4px',
+  },
+  confirmedWhatsAppBtn: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '14px 24px',
+    borderRadius: 'var(--radius-md)',
+    backgroundColor: '#25D366',
+    color: '#ffffff',
+    fontSize: '16px',
+    fontWeight: '700',
+    border: 'none',
+    cursor: 'pointer',
+    marginBottom: '12px',
+    boxShadow: '0 4px 15px rgba(37, 211, 102, 0.25)',
+    transition: 'all 0.2s ease',
+  },
+  confirmedSecondaryActions: {
+    width: '100%',
+    display: 'flex',
+    gap: '8px',
+  },
+  confirmedCopyBtn: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '10px 16px',
+    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--surface-secondary)',
+    color: 'var(--text-secondary)',
+    fontSize: '13px',
+    fontWeight: '600',
+    border: '1px solid var(--border)',
+    cursor: 'pointer',
+  },
+  confirmedDismissBtn: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '10px 16px',
+    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'transparent',
+    color: 'var(--text-muted)',
+    fontSize: '13px',
+    fontWeight: '600',
+    border: '1px solid var(--border)',
+    cursor: 'pointer',
   },
 };
