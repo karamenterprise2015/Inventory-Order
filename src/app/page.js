@@ -806,16 +806,18 @@ export default function Home() {
         </div>
       ) : (
         /* Analytics Panel view */
-        <AnalyticsDashboard
-          analytics={analytics}
-          orders={orders}
-          items={items}
-          loading={analyticsLoading}
-          selectedMonth={selectedMonth}
-          setSelectedMonth={setSelectedMonth}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
-        />
+        <div style={styles.contentWrap}>
+          <AnalyticsDashboard
+            analytics={analytics}
+            orders={orders}
+            items={items}
+            loading={analyticsLoading}
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+          />
+        </div>
       )}
 
       {/* Floating Bottom Drawer Cart Trigger Button (Only Catalog view when items exist) */}

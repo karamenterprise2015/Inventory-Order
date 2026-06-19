@@ -592,6 +592,8 @@ const styles = {
     flexDirection: 'column',
     gap: '16px',
     paddingBottom: '8px',
+    overflowY: 'auto',
+    flex: 1,
   },
   filterRow: {
     display: 'flex',
