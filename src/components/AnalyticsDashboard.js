@@ -57,7 +57,7 @@ function ProductValuePieChart({ data }) {
   const chartData = data.map(item => ({ ...item, total: totalValue }));
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={180}>
       <PieChart>
         <Pie
           data={chartData}
@@ -103,7 +103,7 @@ function OrderTrendChart({ data, timeRange }) {
   };
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height={160}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
         <XAxis 
@@ -566,7 +566,6 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
                   <div key={product.id} style={styles.tableRow}>
                     <div style={styles.tableCell}>
                       <div style={styles.tableProductName}>{product.name}</div>
-                      <div style={styles.tableProductCategory}>{product.category}</div>
                     </div>
                     <div style={styles.tableCell}>{product.totalQuantity} {product.unit || ''}</div>
                     <div style={styles.tableCell}>{formatCurrency(product.unitPrice)}</div>
@@ -628,21 +627,21 @@ const styles = {
   },
   dashboardGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '12px',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '10px',
   },
   card: {
     backgroundColor: 'var(--surface)',
-    borderRadius: '16px',
-    padding: '16px',
+    borderRadius: '12px',
+    padding: '12px',
     border: '1px solid var(--border)',
     boxShadow: 'var(--shadow-sm)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
   },
   fullWidthCard: {
-    gridColumn: 'span 4',
+    gridColumn: 'span 2',
   },
   highlightCard: {
     gridColumn: 'span 2',
@@ -686,7 +685,7 @@ const styles = {
     borderRadius: '99px',
   },
   bigValue: {
-    fontSize: '28px',
+    fontSize: '22px',
     fontWeight: '800',
     color: 'var(--text-primary)',
     lineHeight: 1.1,
@@ -780,9 +779,9 @@ const styles = {
   },
   tableHeader: {
     display: 'grid',
-    gridTemplateColumns: '2fr 1fr 1fr 1fr',
-    gap: '12px',
-    padding: '12px 8px',
+    gridTemplateColumns: '1.5fr 0.8fr 0.8fr 0.8fr',
+    gap: '8px',
+    padding: '10px 6px',
     backgroundColor: 'var(--surface-secondary)',
     borderRadius: '8px',
     marginBottom: '8px',
@@ -794,27 +793,27 @@ const styles = {
   },
   tableRow: {
     display: 'grid',
-    gridTemplateColumns: '2fr 1fr 1fr 1fr',
-    gap: '12px',
-    padding: '12px 8px',
+    gridTemplateColumns: '1.5fr 0.8fr 0.8fr 0.8fr',
+    gap: '8px',
+    padding: '10px 6px',
     backgroundColor: 'var(--surface)',
     borderRadius: '8px',
     border: '1px solid var(--border)',
   },
   tableCell: {
-    fontSize: '13px',
+    fontSize: '11px',
     fontWeight: '600',
     color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
   },
   tableProductName: {
-    fontSize: '13px',
+    fontSize: '11px',
     fontWeight: '700',
     color: 'var(--text-primary)',
   },
   tableProductCategory: {
-    fontSize: '11px',
+    fontSize: '10px',
     fontWeight: '600',
     color: 'var(--text-secondary)',
   },
@@ -823,7 +822,7 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '220px',
+    height: '180px',
     gap: '8px',
   },
   emptyChartText: {
