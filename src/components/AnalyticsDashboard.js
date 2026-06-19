@@ -587,6 +587,9 @@ const styles = {
     gap: '8px',
     position: 'relative',
     overflow: 'hidden',
+    marginRight: '10px',
+    marginLeft: '10px',
+    marignbottom:"5px"
   },
   fullWidthCard: {
     gridColumn: 'span 2',
