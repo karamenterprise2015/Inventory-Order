@@ -57,25 +57,27 @@ function ProductValuePieChart({ data }) {
   const chartData = data.map(item => ({ ...item, total: totalValue }));
 
   return (
-    <ResponsiveContainer width="100%" height={180}>
-      <PieChart>
-        <Pie
-          data={chartData}
-          cx="50%"
-          cy="50%"
-          labelLine={false}
-          label={({ name, percent }) => `${percent.toFixed(1)}%`}
-          outerRadius={70}
-          fill="#8884d8"
-          dataKey="value"
-        >
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip content={renderCustomTooltip} />
-      </PieChart>
-    </ResponsiveContainer>
+    <div style={styles.chartContainer}>
+      <ResponsiveContainer width="100%" height={180}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ name, percent }) => `${percent.toFixed(1)}%`}
+            outerRadius={70}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip content={renderCustomTooltip} />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -103,31 +105,33 @@ function OrderTrendChart({ data, timeRange }) {
   };
 
   return (
-    <ResponsiveContainer width="100%" height={160}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-        <XAxis 
-          dataKey="label" 
-          stroke="var(--text-secondary)"
-          fontSize={10}
-          tick={{ fill: 'var(--text-secondary)' }}
-        />
-        <YAxis 
-          stroke="var(--text-secondary)"
-          fontSize={10}
-          tick={{ fill: 'var(--text-secondary)' }}
-        />
-        <Tooltip content={renderCustomTooltip} />
-        <Line 
-          type="monotone" 
-          dataKey="orders" 
-          stroke="var(--accent)" 
-          strokeWidth={2}
-          dot={{ fill: 'var(--accent)', strokeWidth: 2, r: 3 }}
-          activeDot={{ r: 5 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <div style={styles.chartContainer}>
+      <ResponsiveContainer width="100%" height={160}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <XAxis
+            dataKey="label"
+            stroke="var(--text-secondary)"
+            fontSize={10}
+            tick={{ fill: 'var(--text-secondary)' }}
+          />
+          <YAxis
+            stroke="var(--text-secondary)"
+            fontSize={10}
+            tick={{ fill: 'var(--text-secondary)' }}
+          />
+          <Tooltip content={renderCustomTooltip} />
+          <Line
+            type="monotone"
+            dataKey="orders"
+            stroke="var(--accent)"
+            strokeWidth={2}
+            dot={{ fill: 'var(--accent)', strokeWidth: 2, r: 3 }}
+            activeDot={{ r: 5 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
@@ -306,6 +310,8 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
   const card = (delay = 0) => ({
     initial: { opacity: 0, y: 12 },
     animate: { opacity: 1, y: 0 },
+    whileHover: { scale: 1.02, y: -2 },
+    whileTap: { scale: 0.98 },
     transition: { delay, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
   });
 
@@ -526,6 +532,8 @@ const styles = {
     paddingBottom: '8px',
     overflowY: 'auto',
     flex: 1,
+    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(6, 182, 212, 0.05) 100%)',
+    minHeight: '100vh',
   },
   filterRow: {
     display: 'flex',
@@ -538,14 +546,17 @@ const styles = {
     gap: '8px',
   },
   filterSelect: {
-    padding: '8px 12px',
+    padding: '10px 14px',
     borderRadius: '12px',
-    border: '1px solid var(--border)',
-    backgroundColor: 'var(--surface)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backdropFilter: 'blur(15px)',
+    WebkitBackdropFilter: 'blur(15px)',
     fontSize: '13px',
     fontWeight: '600',
     color: 'var(--text-primary)',
     cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
   },
   filterPeriod: {
     fontSize: '13px',
@@ -564,22 +575,29 @@ const styles = {
     gap: '10px',
   },
   card: {
-    backgroundColor: 'var(--surface)',
-    borderRadius: '12px',
-    padding: '12px',
-    border: '1px solid var(--border)',
-    boxShadow: 'var(--shadow-sm)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    borderRadius: '20px',
+    padding: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: '8px',
+    position: 'relative',
+    overflow: 'hidden',
   },
   fullWidthCard: {
     gridColumn: 'span 2',
+    zIndex: 2,
   },
   highlightCard: {
     gridColumn: 'span 2',
-    borderColor: 'var(--accent)',
-    borderWidth: '2px',
+    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
+    border: '2px solid rgba(99, 102, 241, 0.4)',
+    boxShadow: '0 12px 40px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(99, 102, 241, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+    zIndex: 3,
   },
   cardHeader: {
     display: 'flex',
@@ -588,13 +606,17 @@ const styles = {
     gap: '8px',
   },
   iconWrapper: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '10px',
-    backgroundColor: 'var(--accent-light)',
+    width: '36px',
+    height: '36px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
   },
   cardLabel: {
     fontSize: '11px',
@@ -613,22 +635,28 @@ const styles = {
     fontSize: '11px',
     fontWeight: '700',
     color: 'var(--accent)',
-    backgroundColor: 'var(--accent-light)',
-    padding: '4px 10px',
+    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    border: '1px solid rgba(99, 102, 241, 0.3)',
+    padding: '4px 12px',
     borderRadius: '99px',
+    boxShadow: '0 2px 8px rgba(99, 102, 241, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
   },
   bigValue: {
-    fontSize: '22px',
+    fontSize: '24px',
     fontWeight: '800',
     color: 'var(--text-primary)',
     lineHeight: 1.1,
     fontFamily: 'var(--font-heading)',
     letterSpacing: '-0.03em',
+    textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   cardSubtext: {
     fontSize: '12px',
     fontWeight: '600',
     color: 'var(--text-secondary)',
+    opacity: 0.85,
   },
   productName: {
     fontSize: '15px',
@@ -653,13 +681,15 @@ const styles = {
     gap: '6px',
   },
   trendButton: {
-    padding: '6px 12px',
-    borderRadius: '8px',
-    border: 'none',
+    padding: '6px 14px',
+    borderRadius: '10px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     fontSize: '11px',
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
   },
   topProductsList: {
     display: 'flex',
@@ -670,9 +700,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '10px',
-    backgroundColor: 'var(--surface-secondary)',
-    borderRadius: '10px',
+    padding: '12px',
+    background: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '14px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
   },
   topProductRank: {
     fontSize: '14px',
@@ -714,10 +748,14 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '1.5fr 0.8fr 0.8fr 0.8fr',
     gap: '8px',
-    padding: '10px 6px',
-    backgroundColor: 'var(--surface-secondary)',
-    borderRadius: '8px',
+    padding: '12px 8px',
+    background: 'rgba(255, 255, 255, 0.6)',
+    backdropFilter: 'blur(15px)',
+    WebkitBackdropFilter: 'blur(15px)',
+    borderRadius: '12px',
     marginBottom: '8px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
   },
   tableBody: {
     display: 'flex',
@@ -728,10 +766,13 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: '1.5fr 0.8fr 0.8fr 0.8fr',
     gap: '8px',
-    padding: '10px 6px',
-    backgroundColor: 'var(--surface)',
-    borderRadius: '8px',
-    border: '1px solid var(--border)',
+    padding: '12px 8px',
+    background: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '10px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
   },
   tableCell: {
     fontSize: '11px',
@@ -757,17 +798,33 @@ const styles = {
     justifyContent: 'center',
     height: '180px',
     gap: '8px',
+    background: 'rgba(255, 255, 255, 0.3)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
   },
   emptyChartText: {
     fontSize: '12px',
     color: 'var(--text-muted)',
   },
+  chartContainer: {
+    background: 'rgba(255, 255, 255, 0.3)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '16px',
+    padding: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+  },
   tooltip: {
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    padding: '8px 12px',
-    boxShadow: 'var(--shadow-md)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    borderRadius: '12px',
+    padding: '10px 14px',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
   },
   tooltipName: {
     fontSize: '12px',
@@ -854,6 +911,12 @@ const responsiveStyles = `
     }
     .table-product-name {
       font-size: 11px !important;
+    }
+  }
+
+  @media (max-width: 640px) and (prefers-reduced-motion: no-preference) {
+    .dashboard-grid > div {
+      will-change: transform;
     }
   }
 `;
