@@ -345,66 +345,6 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
       ) : (
         <div style={styles.dashboardGrid}>
 
-          {/* ── Row 1: Total Orders ── */}
-          <motion.div {...card(0.05)} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={styles.iconWrapper}><ShoppingBag size={16} color="var(--accent)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Total Orders</span>
-            </div>
-            <div style={styles.bigValue}>{orderValueAnalytics.totalOrders}</div>
-            <div style={styles.cardSubtext}>All time</div>
-          </motion.div>
-
-          {/* ── Row 1: Total Order Value ── */}
-          <motion.div {...card(0.1)} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--success-light)' }}><DollarSign size={16} color="var(--success)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Total Order Value</span>
-            </div>
-            <div style={styles.bigValue}>{formatCurrency(orderValueAnalytics.totalOrderValue)}</div>
-            <div style={styles.cardSubtext}>All time</div>
-          </motion.div>
-
-          {/* ── Row 1: Average Order Value ── */}
-          <motion.div {...card(0.15)} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--accent-light)' }}><BarChart3 size={16} color="var(--accent)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Average Order Value</span>
-            </div>
-            <div style={styles.bigValue}>{formatCurrency(orderValueAnalytics.averageOrderValue)}</div>
-            <div style={styles.cardSubtext}>Per order</div>
-          </motion.div>
-
-          {/* ── Row 1: Highest Value Order ── */}
-          <motion.div {...card(0.2)} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--success-light)' }}><ArrowUp size={16} color="var(--success)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Highest Value Order</span>
-            </div>
-            <div style={styles.bigValue}>{formatCurrency(orderValueAnalytics.highestValueOrder)}</div>
-            <div style={styles.cardSubtext}>Peak order</div>
-          </motion.div>
-
-          {/* ── Row 2: Lowest Value Order ── */}
-          <motion.div {...card(0.25)} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--danger-light)' }}><ArrowDown size={16} color="var(--danger)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Lowest Value Order</span>
-            </div>
-            <div style={styles.bigValue}>{formatCurrency(orderValueAnalytics.lowestValueOrder)}</div>
-            <div style={styles.cardSubtext}>Minimum order</div>
-          </motion.div>
-
-          {/* ── Row 2: Today's Order Value ── */}
-          <motion.div {...card(0.3)} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--accent-light)' }}><Calendar size={16} color="var(--accent)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Today's Order Value</span>
-            </div>
-            <div style={styles.bigValue}>{formatCurrency(orderValueAnalytics.todayOrderValue)}</div>
-            <div style={styles.cardSubtext}>Today</div>
-          </motion.div>
-
           {/* ── Row 2: This Week's Order Value ── */}
           <motion.div {...card(0.35)} style={styles.card}>
             <div style={styles.cardHeader}>
