@@ -90,7 +90,7 @@ export default function ShowOrder({ order, onClose, onResendWhatsApp, onCancel, 
               <div key={category} style={styles.categoryGroup}>
                 <h4 style={styles.categoryTitle}>{category}</h4>
                 {items.map((item, idx) => (
-                  <div key={idx} style={styles.itemRow}>
+                  <div key={`${category}-${item.name}-${idx}`} style={styles.itemRow}>
                     <span style={styles.itemName}>{item.name}</span>
                     <span style={styles.itemQuantity}>{item.quantity} {item.unit}</span>
                   </div>
@@ -123,7 +123,10 @@ export default function ShowOrder({ order, onClose, onResendWhatsApp, onCancel, 
 
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => onReorder(order)}
+              onClick={() => {
+                onReorder(order);
+                onClose();
+              }}
               style={{ ...styles.actionButton, ...styles.reorderButton }}
             >
               Reorder Items
@@ -143,8 +146,8 @@ const styles = {
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(9, 13, 22, 0.6)',
-    backdropFilter: 'blur(4px)',
-    WebkitBackdropFilter: 'blur(4px)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     zIndex: 2000,
   },
   drawer: {
@@ -156,12 +159,14 @@ const styles = {
     marginRight: 'auto',
     width: '100%',
     maxWidth: '480px',
-    backgroundColor: 'var(--surface)',
-    borderTopLeftRadius: 'var(--radius-lg)',
-    borderTopRightRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-lg)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    borderTopLeftRadius: '24px',
+    borderTopRightRadius: '24px',
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
     zIndex: 2001,
-    border: '1px solid var(--border)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
     borderBottom: 'none',
     maxHeight: '85vh',
     display: 'flex',
@@ -172,7 +177,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '20px 20px 16px 20px',
-    borderBottom: '1px solid var(--border)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
   },
   drawerTitle: {
     fontSize: '18px',
@@ -184,12 +189,14 @@ const styles = {
     width: '36px',
     height: '36px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: 'var(--text-secondary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
   },
   drawerContent: {
     padding: '20px',
@@ -215,6 +222,8 @@ const styles = {
     borderRadius: 'var(--radius-full)',
     textTransform: 'uppercase',
     letterSpacing: '0.02em',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
   },
   orderDate: {
     fontSize: '12px',
@@ -225,9 +234,12 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     padding: '12px',
-    backgroundColor: 'var(--surface-secondary)',
-    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '12px',
     marginBottom: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   infoIcon: {
     marginRight: '8px',
@@ -241,12 +253,14 @@ const styles = {
   notesBlock: {
     display: 'flex',
     padding: '12px',
-    backgroundColor: 'var(--accent-light)',
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     borderWidth: '1px',
     borderStyle: 'solid',
-    borderColor: 'rgba(99, 102, 241, 0.2)',
-    borderRadius: 'var(--radius-sm)',
-    boxShadow: 'var(--shadow-sm)',
+    borderColor: 'rgba(99, 102, 241, 0.3)',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(99, 102, 241, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
     marginBottom: '16px',
   },
   notesIcon: {
@@ -297,9 +311,12 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '10px 12px',
-    backgroundColor: 'var(--surface-secondary)',
-    borderRadius: 'var(--radius-xs)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '12px',
     marginBottom: '6px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   itemName: {
     fontSize: '14px',
@@ -321,22 +338,26 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '12px 20px',
-    borderRadius: 'var(--radius-md)',
+    borderRadius: '14px',
     fontSize: '14px',
     fontWeight: '700',
     borderWidth: '1px',
     borderStyle: 'solid',
-    borderColor: 'var(--border)',
-    backgroundColor: 'var(--surface)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: 'var(--text-primary)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
   },
   cancelButton: {
-    borderColor: 'var(--danger)',
+    borderColor: 'rgba(239, 68, 68, 0.5)',
     color: 'var(--danger)',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
   },
   reorderButton: {
-    backgroundColor: 'var(--accent-light)',
-    borderColor: 'var(--accent)',
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    borderColor: 'rgba(99, 102, 241, 0.4)',
     color: 'var(--accent)',
   },
 };

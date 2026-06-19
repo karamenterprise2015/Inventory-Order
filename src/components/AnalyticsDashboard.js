@@ -58,7 +58,7 @@ function ProductValuePieChart({ data }) {
 
   return (
     <div style={styles.chartContainer}>
-      <ResponsiveContainer width="100%" height={180}>
+      <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie
             data={chartData}
@@ -69,6 +69,7 @@ function ProductValuePieChart({ data }) {
             outerRadius={70}
             fill="#8884d8"
             dataKey="value"
+            labelPosition="inside"
           >
             {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
@@ -106,8 +107,8 @@ function OrderTrendChart({ data, timeRange }) {
 
   return (
     <div style={styles.chartContainer}>
-      <ResponsiveContainer width="100%" height={160}>
-        <LineChart data={data}>
+      <ResponsiveContainer width="95%" height={160}>
+        <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
             dataKey="label"
@@ -536,6 +537,7 @@ const styles = {
     minHeight: '100vh',
   },
   filterRow: {
+    margin: '10px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -819,6 +821,9 @@ const styles = {
     padding: '12px',
     border: '1px solid rgba(255, 255, 255, 0.25)',
     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tooltip: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',

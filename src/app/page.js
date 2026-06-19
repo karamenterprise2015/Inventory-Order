@@ -451,40 +451,42 @@ export default function Home() {
           <h1 style={styles.appTitle}>Order Panel</h1>
           <p style={styles.appSubtitle}>Store Inventory Management</p>
         </div>
+        <div style={{ display: 'flex',flexWrap: 'wrap', gap: '0.5rem'
+        }}> {/* Light/Dark mode toggler */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleTheme}
+              style={styles.themeToggle}
+              aria-label="Toggle theme mode"
+            >
+              {theme === 'light' ? (
+                <Moon size={18} strokeWidth={2.5} />
+              ) : (
+                <Sun size={18} strokeWidth={2.5} />
+              )}
+            </motion.button>
 
-        {/* Light/Dark mode toggler */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={toggleTheme}
-          style={styles.themeToggle}
-          aria-label="Toggle theme mode"
-        >
-          {theme === 'light' ? (
-            <Moon size={18} strokeWidth={2.5} />
-          ) : (
-            <Sun size={18} strokeWidth={2.5} />
-          )}
-        </motion.button>
-
-        {/* Price visibility toggle */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowPrice(!showPrice)}
-          style={{
-            ...styles.themeToggle,
-            marginLeft: '8px',
-            backgroundColor: showPrice ? 'var(--accent)' : 'var(--surface)',
-            color: showPrice ? '#ffffff' : 'var(--text-secondary)',
-          }}
-          aria-label="Toggle price visibility"
-        >
-          {showPrice ? (
-            <Eye size={18} strokeWidth={2.5} />
-          ) : (
-            <EyeOff size={18} strokeWidth={2.5} />
-          )}
-        </motion.button>
-      </header>
+            {/* Price visibility toggle */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowPrice(!showPrice)}
+              style={{
+                ...styles.themeToggle,
+                backgroundColor: showPrice ? 'var(--accent)' : 'var(--surface)',
+                color: showPrice ? '#ffffff' : 'var(--text-secondary)',
+              }}
+              aria-label="Toggle price visibility"
+            >
+              {showPrice ? (
+                <Eye size={18} strokeWidth={2.5} />
+              ) : (
+                <EyeOff size={18} strokeWidth={2.5} />
+              )}
+            </motion.button></div>
+           
+          </header>
+      
+        
 
       {/* Primary Panels views */}
       {activeTab === 'catalog' ? (
@@ -1055,6 +1057,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     position: 'relative',
+    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(6, 182, 212, 0.05) 100%)',
   },
   header: {
     display: 'flex',
@@ -1068,6 +1071,11 @@ const styles = {
     borderBottomRightRadius: 'var(--radius-sm)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
   },
   appTitle: {
     fontSize: '20px',
@@ -1085,12 +1093,15 @@ const styles = {
     width: '38px',
     height: '38px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backdropFilter: 'blur(15px)',
+    WebkitBackdropFilter: 'blur(15px)',
     color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
   },
   contentWrap: {
     flex: 1,
@@ -1105,10 +1116,15 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
-    borderRadius: 'var(--radius-sm)',
+    borderRadius: '16px',
     marginTop: '6px',
     marginRight: '8px',
     marginLeft: '8px',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backdropFilter: 'blur(15px)',
+    WebkitBackdropFilter: 'blur(15px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
   },
   searchWrapper: {
     position: 'relative',
@@ -1124,12 +1140,14 @@ const styles = {
   searchInput: {
     width: '100%',
     padding: '11px 16px 11px 40px',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--border)',
-    backgroundColor: 'var(--surface)',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: 'var(--text-primary)',
     fontSize: '14px',
-    boxShadow: 'var(--shadow-sm)',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
   },
   clearSearch: {
     position: 'absolute',
@@ -1137,11 +1155,14 @@ const styles = {
     width: '22px',
     height: '22px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: 'var(--text-secondary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   categoriesBar: {
     display: 'flex',
@@ -1158,8 +1179,10 @@ const styles = {
     fontWeight: '700',
     borderWidth: '1px',
     borderStyle: 'solid',
-    borderColor: 'var(--border)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     transition: 'all 0.15s ease',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
   },
   loadingWrap: {
     padding: '24px',
@@ -1172,14 +1195,16 @@ const styles = {
     alignItems: 'center',
     gap: '16px',
     padding: '12px',
-    backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--border)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   skeletonThumb: {
     width: '56px',
     height: '56px',
-    borderRadius: 'var(--radius-sm)',
+    borderRadius: '12px',
   },
   emptyWrap: {
     flex: 1,
@@ -1193,10 +1218,13 @@ const styles = {
     width: '72px',
     height: '72px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   createFirstOrderButton: {
     marginTop: '20px',
@@ -1239,16 +1267,20 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '12px',
-    backgroundColor: 'var(--surface)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-md)',
-    boxShadow: 'var(--shadow-sm)',
+    padding: '14px',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '20px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+    position: 'relative',
+    overflow: 'hidden',
   },
   productThumb: {
     width: '60px',
     height: '60px',
-    borderRadius: 'var(--radius-sm)',
+    borderRadius: '14px',
     objectFit: 'cover',
   },
   productInfo: {
@@ -1269,21 +1301,27 @@ const styles = {
     fontWeight: '800',
     textTransform: 'uppercase',
     color: 'var(--text-secondary)',
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     padding: '2px 8px',
     borderRadius: 'var(--radius-full)',
     width: 'fit-content',
     letterSpacing: '0.04em',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   priceBadge: {
     fontSize: '11px',
     fontWeight: '700',
     color: 'var(--success)',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     padding: '3px 8px',
-    borderRadius: 'var(--radius-sm)',
+    borderRadius: '10px',
     marginTop: '4px',
     display: 'inline-block',
+    border: '1px solid rgba(16, 185, 129, 0.3)',
   },
   selectorWrapper: {
     flexShrink: 0,
@@ -1296,16 +1334,19 @@ const styles = {
     width: 'calc(100% - 32px)',
     maxWidth: '448px',
     height: '52px',
-    backgroundColor: 'var(--text-primary)',
+    backgroundColor: 'rgba(99, 102, 241, 0.9)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
     color: 'var(--surface)',
-    borderRadius: 'var(--radius-md)',
+    borderRadius: '16px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '0 20px',
-    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.25)',
+    boxShadow: '0 12px 40px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
     zIndex: 900,
-    border: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    marginBottom:'6px'
   },
   floatingCartContent: {
     display: 'flex',
@@ -1364,18 +1405,22 @@ const styles = {
     gap: '16px',
   },
   orderCard: {
-    backgroundColor: 'var(--surface)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(20px) saturate(180%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
     borderWidth: '1px',
     borderStyle: 'solid',
-    borderColor: 'var(--border)',
-    borderRadius: 'var(--radius-sm)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: '20px',
     padding: '16px',
-    boxShadow: 'var(--shadow-sm)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
     cursor: 'pointer',
     transition: 'all 0.15s ease-in-out',
+    position: 'relative',
+    overflow: 'hidden',
   },
   orderCardHeader: {
     display: 'flex',
@@ -1402,6 +1447,8 @@ const styles = {
     alignItems: 'center',
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
   },
   orderCardDate: {
     fontSize: '11px',
@@ -1417,8 +1464,10 @@ const styles = {
     width: '32px',
     height: '32px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--surface-secondary)',
-    border: '1px solid var(--border)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
@@ -1443,10 +1492,12 @@ const styles = {
     fontWeight: '500',
   },
   orderItemsSummary: {
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     padding: '10px 12px',
-    borderRadius: 'var(--radius-xs)',
-    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
     display: 'flex',
     flexDirection: 'column',
     gap: '6px',
@@ -1497,10 +1548,12 @@ const styles = {
   orderNotesBlock: {
     fontSize: '12px',
     color: 'var(--text-secondary)',
-    backgroundColor: 'var(--surface-secondary)',
-    border: '1px solid var(--border)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
     padding: '8px 12px',
-    borderRadius: 'var(--radius-xs)',
+    borderRadius: '12px',
     lineHeight: '1.4',
   },
   orderCardFooter: {
@@ -1519,39 +1572,45 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#128c7e',
+    backgroundColor: 'rgba(18, 140, 126, 0.9)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: '#ffffff',
     padding: '6px 12px',
-    borderRadius: 'var(--radius-xs)',
+    borderRadius: '10px',
     fontSize: '11px',
     fontWeight: '700',
-    border: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     transition: 'all 0.15s ease',
   },
   cancelButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid var(--border)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     color: 'var(--danger)',
     padding: '6px 12px',
-    borderRadius: 'var(--radius-xs)',
+    borderRadius: '10px',
     fontSize: '11px',
     fontWeight: '600',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     transition: 'all 0.15s ease',
   },
   reorderButton: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid var(--border)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     color: 'var(--text-primary)',
     padding: '6px 12px',
-    borderRadius: 'var(--radius-xs)',
+    borderRadius: '10px',
     fontSize: '11px',
     fontWeight: '600',
-    backgroundColor: 'var(--surface)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     transition: 'all 0.15s ease',
   },
   confirmOverlay: {
@@ -1574,14 +1633,16 @@ const styles = {
     marginRight: 'auto',
     width: '100%',
     maxWidth: '480px',
-    backgroundColor: 'var(--surface)',
-    borderTopLeftRadius: 'var(--radius-lg)',
-    borderTopRightRadius: 'var(--radius-lg)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    borderTopLeftRadius: '24px',
+    borderTopRightRadius: '24px',
     padding: '24px',
     paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
-    boxShadow: 'var(--shadow-lg)',
+    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
     zIndex: 3001,
-    border: '1px solid var(--border)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
     borderBottom: 'none',
   },
   confirmHeader: {
@@ -1610,8 +1671,10 @@ const styles = {
   confirmCancelButton: {
     padding: '10px 20px',
     borderRadius: 'var(--radius-full)',
-    border: '1px solid var(--border)',
-    backgroundColor: 'var(--surface)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: 'var(--text-primary)',
     fontSize: '13px',
     fontWeight: '700',
@@ -1620,7 +1683,9 @@ const styles = {
     padding: '10px 20px',
     borderRadius: 'var(--radius-full)',
     border: 'none',
-    backgroundColor: 'var(--danger)',
+    backgroundColor: 'rgba(239, 68, 68, 0.9)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: '#ffffff',
     fontSize: '13px',
     fontWeight: '700',
@@ -1792,15 +1857,17 @@ const styles = {
   confirmedCard: {
     width: '100%',
     maxWidth: '380px',
-    backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-lg)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    borderRadius: '24px',
     padding: '32px 24px 24px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
-    border: '1px solid var(--border)',
-    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
     position: 'relative',
     pointerEvents: 'auto',
   },
@@ -1811,12 +1878,14 @@ const styles = {
     width: '32px',
     height: '32px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: 'var(--text-secondary)',
-    border: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     cursor: 'pointer',
   },
   confirmedIconCircle: {
@@ -1846,13 +1915,16 @@ const styles = {
   },
   confirmedSummary: {
     width: '100%',
-    backgroundColor: 'var(--surface-secondary)',
-    borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '12px',
     padding: '12px 14px',
     marginBottom: '24px',
     display: 'flex',
     flexDirection: 'column',
     gap: '6px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   confirmedSummaryRow: {
     display: 'flex',
@@ -1882,15 +1954,17 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '14px 24px',
-    borderRadius: 'var(--radius-md)',
-    backgroundColor: '#25D366',
+    borderRadius: '16px',
+    backgroundColor: 'rgba(37, 211, 102, 0.9)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: '#ffffff',
     fontSize: '16px',
     fontWeight: '700',
-    border: 'none',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     cursor: 'pointer',
     marginBottom: '12px',
-    boxShadow: '0 4px 15px rgba(37, 211, 102, 0.25)',
+    boxShadow: '0 4px 15px rgba(37, 211, 102, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
     transition: 'all 0.2s ease',
   },
   confirmedSecondaryActions: {
@@ -1904,12 +1978,14 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '10px 16px',
-    borderRadius: 'var(--radius-sm)',
-    backgroundColor: 'var(--surface-secondary)',
+    borderRadius: '12px',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: 'var(--text-secondary)',
     fontSize: '13px',
     fontWeight: '600',
-    border: '1px solid var(--border)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
     cursor: 'pointer',
   },
   confirmedDismissBtn: {
@@ -1918,12 +1994,14 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '10px 16px',
-    borderRadius: 'var(--radius-sm)',
-    backgroundColor: 'transparent',
+    borderRadius: '12px',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
     color: 'var(--text-muted)',
     fontSize: '13px',
     fontWeight: '600',
-    border: '1px solid var(--border)',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
     cursor: 'pointer',
   },
 };

@@ -124,6 +124,11 @@ const styles = {
     justifyContent: 'center',
     color: 'var(--text-muted)',
     fontSize: '13px',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
   donutWrapper: {
     display: 'flex',
@@ -133,7 +138,7 @@ const styles = {
   legendList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px', // Tighter layout
+    gap: '2px',
     width: '100%',
   },
   legendItem: {
@@ -141,7 +146,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '8px 4px',
-    borderBottom: '1px solid var(--border)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.25)',
   },
   legendLeft: {
     display: 'flex',
@@ -173,10 +178,13 @@ const styles = {
     fontSize: '10px',
     fontWeight: '700',
     color: 'var(--text-secondary)',
-    backgroundColor: 'var(--surface-secondary)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
     padding: '2px 8px',
     borderRadius: 'var(--radius-full)',
     minWidth: '36px',
     textAlign: 'center',
+    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
 };
