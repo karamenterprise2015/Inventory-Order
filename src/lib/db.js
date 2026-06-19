@@ -25,7 +25,7 @@ const INITIAL_ITEMS = [
   { id: '14', name: 'Thousand Island', category: 'Sauces & Dressings', unit: 'box', image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/sauce-ketchup/5/m/x/1-thousand-dressing-1kg-pouch-1-sauce-veeba-original-imagucjx5frgqmm9.jpeg?q=90', price: 2045.11 },
   { id: '15', name: 'Mayonnaise', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPTaRmOYiLhFgK5RGEV_CSvEtDpabWyDnT9bzRuQjywTkYuSELABS9fLA&s=10', price: null },
   { id: '16', name: 'Chipotle Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUEhwtmdU1xLZe76akZnCT9EnKgVGBopM-5OD40N2CnCgYeauDuvshysI&s=10', price: 240.01 },
-  { id: '17', name: 'Customized Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6jvFtBuTjezcbiHQN57KIwm0kjLC35Z1VV4Cr2gNb-KwT2U7n39KjTHE&s=10', price: null },
+  { id: '17', name: 'Customized Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6jvFtBuTjezcbiHQN57KIwm0kjLC35Z1VV4Cr2gNb-KwT2U7n39KjTHE&s=10', price: 254.71 },
   { id: '18', name: 'Pizza Sauce', category: 'Sauces & Dressings', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPv7HxAHbKAHqCEbh-jFkncUBJnr_GNZTdGJdKHgf5SA&s=10', price: 1359.67 },
   { id: '19', name: 'Makhni Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2VcFpI0Yc-44bBng9q-VwAbhGtnYA2QglmdtRDWviLw&s=10', price: 229.75 },
   { id: '20', name: 'Peri Peri', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/b119d62ac06254c71c88a59807ee4a23.png', price: 238.00 },
@@ -33,11 +33,11 @@ const INITIAL_ITEMS = [
   { id: '22', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/691d5aef911e761fe41d11f7ed8acec7.png', price: 236.50 },
 
   // Toppings
-  { id: '23', name: 'Black Olives', category: 'Toppings', unit: 'jar', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s', price: null },
-  { id: '24', name: 'Jalapeno', category: 'Toppings', unit: 'jar', image: 'https://www.kiranapoorti.com/image/cache/catalog/SARWAR%20JALAPINOS-225x225.jpeg', price: null },
+  { id: '23', name: 'Black Olives', category: 'Toppings', unit: 'jar', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s', price: 179.90 },
+  { id: '24', name: 'Jalapeno', category: 'Toppings', unit: 'jar', image: 'https://www.kiranapoorti.com/image/cache/catalog/SARWAR%20JALAPINOS-225x225.jpeg', price: 100 },
 
   // Frozen/Prepared Foods
-  { id: '25', name: 'Tikki', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvjJXD77qjfaFYWCFh_u0R8ge0ClCc21YRtpC_frUI5Q&s=10', price: 855.60 },
+  { id: '25', name: 'Tikki', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvjJXD77qjfaFYWCFh_u0R8ge0ClCc21YRtpC_frUI5Q&s=10', price: 900 },
   { id: '26', name: 'French Fries', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8KIENaZXAqzthNmim8Q0rteZHRZP4zt8XPsjdfSeXkmspBCfCXsBhmcA&s=10', price: 1481.97 },
   { id: '27', name: 'Manchurian', category: 'Frozen/Prepared Foods', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQe2lMhfvV5d1ndzon5uE1fk_Iu6uIeB-cDou4b1n8cqJVX8FV-SQdmr8&s=10', price: 132.01 },
   { id: '28', name: 'Corn', category: 'Frozen/Prepared Foods', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5nrBTErra1HdFfQQQ6tjjiVd4hB7h9PZA5WQOurHTavnqjEpbEL-CXPS_&s=10', price: 1260.00 },
@@ -48,16 +48,16 @@ const INITIAL_ITEMS = [
   { id: '31', name: 'Ketchup', category: 'Packaging/Boxes', unit: 'can', image: 'https://www.bbassets.com/media/uploads/p/l/40032979_4-heinz-tomato-ketchup.jpg', price: 195 },
 
   // Spices/Seasonings
-  { id: '32', name: 'Peri Peri Masala', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1rr9FY5j2eam3mJb62JHrZCQCAv89AXWwX0kwR-Uriw&s=10', price: null },
+  { id: '32', name: 'Peri Peri Masala', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1rr9FY5j2eam3mJb62JHrZCQCAv89AXWwX0kwR-Uriw&s=10', price: 160.50 },
   { id: '33', name: 'Parcel Oregano', category: 'Spices/Seasonings', unit: 'packet', image: 'https://5.imimg.com/data5/DB/RX/ZI/SELLER-1442638/vkl-oregano-seasoning-sachet-0-8gm-pouch.jpg', price: 172.30 },
   { id: '34', name: 'Parcel Chilli Flakes', category: 'Spices/Seasonings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2023/8/339475399/NY/CM/AW/93581834/chilli-flakes-sachet-500x500.jpg', price: 162.50 },
-  { id: '35', name: 'Oregano', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt7rE7c01frkhQi4y1iqgvI9NTbB9Oyo3Fw6kf2Y1vQw&s=10', price: null },
-  { id: '36', name: 'Chilli Flakes', category: 'Spices/Seasonings', unit: 'packet', image: 'https://m.media-amazon.com/images/I/613boUkik6L.jpg', price: null },
+  { id: '35', name: 'Oregano', category: 'Spices/Seasonings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt7rE7c01frkhQi4y1iqgvI9NTbB9Oyo3Fw6kf2Y1vQw&s=10', price: 175 },
+  { id: '36', name: 'Chilli Flakes', category: 'Spices/Seasonings', unit: 'packet', image: 'https://m.media-amazon.com/images/I/613boUkik6L.jpg', price: 150 },
 
   // Oils & Fats
   { id: '37', name: 'Oil', category: 'Oils & Fats', unit: 'box', image: 'https://m.media-amazon.com/images/I/71XEWRivd9L._AC_UF350,350_QL80_.jpg', price: 1821.00 },
-  { id: '38', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/butter/w/e/i/-original-imagz7ffvezgmzfk.jpeg?q=90', price: null },
-  { id: '39', name: 'Paneer', category: 'Oils & Fats', unit: 'Gms', image: 'https://newsmeter.in/h-upload/2025/02/13/394708-20250213175015.webp', price: null },
+  { id: '38', name: 'Butter', category: 'Oils & Fats', unit: 'box', image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/butter/w/e/i/-original-imagz7ffvezgmzfk.jpeg?q=90', price: 85 },
+  { id: '39', name: 'Paneer', category: 'Oils & Fats', unit: 'Gms', image: 'https://newsmeter.in/h-upload/2025/02/13/394708-20250213175015.webp', price: 310 },
 ];
 
 // In-memory storage (resets on server restart) - fallback if Supabase not configured
