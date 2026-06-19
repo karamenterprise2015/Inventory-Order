@@ -348,8 +348,7 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
           {/* ── Row 2: This Week's Order Value ── */}
           <motion.div {...card(0.35)} style={styles.card}>
             <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--success-light)' }}><Calendar size={16} color="var(--success)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>This Week's Value</span>
+             <span style={styles.cardLabel}>This Week's Value</span>
             </div>
             <div style={styles.bigValue}>{formatCurrency(orderValueAnalytics.weekOrderValue)}</div>
             <div style={styles.cardSubtext}>This week</div>
@@ -358,7 +357,6 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
           {/* ── Row 2: This Month's Order Value ── */}
           <motion.div {...card(0.4)} style={styles.card}>
             <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--accent-light)' }}><Calendar size={16} color="var(--accent)" strokeWidth={2.5} /></div>
               <span style={styles.cardLabel}>This Month's Value</span>
             </div>
             <div style={styles.bigValue}>{formatCurrency(orderValueAnalytics.monthOrderValue)}</div>
@@ -399,8 +397,7 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
           {/* ── Row 5: Most Ordered Product ── */}
           <motion.div {...card(0.55)} style={styles.card}>
             <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--accent-light)' }}><Crown size={16} color="var(--accent)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Most Ordered</span>
+                <span style={styles.cardLabel}>Most Ordered</span>
             </div>
             {productDemandAnalytics.mostOrdered ? (
               <>
@@ -416,8 +413,7 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
           {/* ── Row 5: Least Ordered Product ── */}
           <motion.div {...card(0.6)} style={styles.card}>
             <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--surface-secondary)' }}><Package size={16} color="var(--text-secondary)" strokeWidth={2.5} /></div>
-              <span style={styles.cardLabel}>Least Ordered</span>
+                <span style={styles.cardLabel}>Least Ordered</span>
             </div>
             {productDemandAnalytics.leastOrdered ? (
               <>
@@ -433,7 +429,6 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
           {/* ── Row 5: Total Units Ordered ── */}
           <motion.div {...card(0.65)} style={styles.card}>
             <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--success-light)' }}><Package size={16} color="var(--success)" strokeWidth={2.5} /></div>
               <span style={styles.cardLabel}>Total Units</span>
             </div>
             <div style={styles.bigValue}>{productDemandAnalytics.totalUnitsOrdered}</div>
@@ -443,7 +438,6 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
           {/* ── Row 5: Total Unique Products ── */}
           <motion.div {...card(0.7)} style={styles.card}>
             <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--accent-light)' }}><ShoppingBag size={16} color="var(--accent)" strokeWidth={2.5} /></div>
               <span style={styles.cardLabel}>Unique Products</span>
             </div>
             <div style={styles.bigValue}>{productDemandAnalytics.totalUniqueProducts}</div>
@@ -453,7 +447,6 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
           {/* ── Row 6: Highest Value Product ── */}
           <motion.div {...card(0.75)} style={{ ...styles.card, ...styles.highlightCard }}>
             <div style={styles.cardHeader}>
-              <div style={{ ...styles.iconWrapper, backgroundColor: 'var(--accent-light)' }}><Award size={16} color="var(--accent)" strokeWidth={2.5} /></div>
               <span style={styles.cardLabel}>Highest Value Product</span>
             </div>
             {productValueAnalytics.length > 0 ? (
@@ -475,7 +468,7 @@ export default function AnalyticsDashboard({ analytics, orders, analyticsLoading
             <div style={styles.topProductsList}>
               {productValueAnalytics.slice(0, 5).map((product, idx) => (
                 <div key={product.id} style={styles.topProductRow}>
-                  <div style={styles.topProductRank}>#{idx + 1}</div>
+                  <div style={styles.topProductRank}>{idx + 1}</div>
                   <div style={styles.topProductInfo}>
                     <div style={styles.topProductName}>{product.name}</div>
                     <div style={styles.topProductMeta}>
