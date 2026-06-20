@@ -44,7 +44,7 @@ const INITIAL_ITEMS = [
 
   // Packaging/Boxes
   { id: '29', name: 'Pizza Box', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/717u+nWAaTL._AC_UF894,1000_QL80_.jpg', price: 475.01 },
-  { id: '30', name: 'Parcel Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/71nqJAlHjnL._AC_UF894,1000_QL80_.jpg', price: null },
+  { id: '30', name: 'Parcel Ketchup', category: 'Packaging/Boxes', unit: 'box', image: 'https://m.media-amazon.com/images/I/71nqJAlHjnL._AC_UF894,1000_QL80_.jpg', price: 1125 },
   { id: '31', name: 'Ketchup', category: 'Packaging/Boxes', unit: 'can', image: 'https://www.bbassets.com/media/uploads/p/l/40032979_4-heinz-tomato-ketchup.jpg', price: 195 },
 
   // Spices/Seasonings
