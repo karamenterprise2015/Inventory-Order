@@ -14,6 +14,7 @@ const INITIAL_ITEMS = [
   { id: '5', name: 'Cheese Slice', category: 'Milk Products', unit: 'box', image: 'https://www.bbassets.com/media/uploads/p/l/40005949_4-go-cheese-slice-plain.jpg', price: 5440.01 },
   { id: '6', name: 'White Cheese', category: 'Milk Products', unit: 'box', image: 'https://m.media-amazon.com/images/I/61i+xZXRZ2L._AC_UF894,1000_QL80_.jpg', price: 1900.21 },
   { id: '7', name: 'Gouda', category: 'Milk Products', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCS0ToFqulGdWqPyEiq9d71Wab962yz7y3UUEAEGLauQ&s', price: 230.60 },
+  { id: '8', name: 'Mozrella Chesse', category: 'Milk Products', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCS0ToFqulGdWqPyEiq9d71Wab962yz7y3UUEAEGLauQ&s', price: 560 },
 
   // Sauces & Dressings
   { id: '8', name: 'Chinese Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREBBXf4fQbb2FLL2D0MWk87Ss0aq3GIfXWJwVHP-C-kw&s', price: 209.00 },
@@ -23,14 +24,14 @@ const INITIAL_ITEMS = [
   { id: '12', name: 'Mexican Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/76346bedc39b74f0db8927c6c46ab637.png', price: 220.01 },
   { id: '13', name: 'Schezwan Sauce', category: 'Sauces & Dressings', unit: 'box', image: 'https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axg29whcmhb3/b/tbn-prod-assets/o/PRODUCT_1696394336616.webp', price: 1839.60 },
   { id: '14', name: 'Thousand Island', category: 'Sauces & Dressings', unit: 'box', image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/sauce-ketchup/5/m/x/1-thousand-dressing-1kg-pouch-1-sauce-veeba-original-imagucjx5frgqmm9.jpeg?q=90', price: 2045.11 },
-  { id: '15', name: 'Mayonnaise', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPTaRmOYiLhFgK5RGEV_CSvEtDpabWyDnT9bzRuQjywTkYuSELABS9fLA&s=10', price: null },
+  { id: '15', name: 'Mayonnaise', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPTaRmOYiLhFgK5RGEV_CSvEtDpabWyDnT9bzRuQjywTkYuSELABS9fLA&s=10', price: 102.32 },
   { id: '16', name: 'Chipotle Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUEhwtmdU1xLZe76akZnCT9EnKgVGBopM-5OD40N2CnCgYeauDuvshysI&s=10', price: 240.01 },
   { id: '17', name: 'Customized Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6jvFtBuTjezcbiHQN57KIwm0kjLC35Z1VV4Cr2gNb-KwT2U7n39KjTHE&s=10', price: 254.71 },
   { id: '18', name: 'Pizza Sauce', category: 'Sauces & Dressings', unit: 'box', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPv7HxAHbKAHqCEbh-jFkncUBJnr_GNZTdGJdKHgf5SA&s=10', price: 1359.67 },
   { id: '19', name: 'Makhni Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2VcFpI0Yc-44bBng9q-VwAbhGtnYA2QglmdtRDWviLw&s=10', price: 229.75 },
   { id: '20', name: 'Peri Peri', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/b119d62ac06254c71c88a59807ee4a23.png', price: 238.00 },
   { id: '21', name: 'Korean Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2025/7/532155818/TV/XZ/LQ/123815550/1kg-korean-barbeque-chilli-sauce.png', price: null },
-  { id: '22', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/691d5aef911e761fe41d11f7ed8acec7.png', price: 236.50 },
+  { id: '22', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2022/3/BA/VN/QF/1442638/40126254-2-1-amul-pizza-cheese-mozzarella-diced.jpg', price: 236.50 },
 
   // Toppings
   { id: '23', name: 'Black Olives', category: 'Toppings', unit: 'jar', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s', price: 179.90 },
