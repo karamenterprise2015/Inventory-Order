@@ -14,7 +14,7 @@ const INITIAL_ITEMS = [
   { id: '5', name: 'Cheese Slice', category: 'Milk Products', unit: 'box', image: 'https://www.bbassets.com/media/uploads/p/l/40005949_4-go-cheese-slice-plain.jpg', price: 5440.01 },
   { id: '6', name: 'White Cheese', category: 'Milk Products', unit: 'box', image: 'https://m.media-amazon.com/images/I/61i+xZXRZ2L._AC_UF894,1000_QL80_.jpg', price: 1900.21 },
   { id: '7', name: 'Gouda', category: 'Milk Products', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCS0ToFqulGdWqPyEiq9d71Wab962yz7y3UUEAEGLauQ&s', price: 230.60 },
-  { id: '8', name: 'Mozrella Chesse', category: 'Milk Products', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCS0ToFqulGdWqPyEiq9d71Wab962yz7y3UUEAEGLauQ&s', price: 560 },
+  { id: '8', name: 'Mozrella Chesse', category: 'Milk Products', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2022/3/BA/VN/QF/1442638/40126254-2-1-amul-pizza-cheese-mozzarella-diced.jpg', price: 560 },
 
   // Sauces & Dressings
   { id: '8', name: 'Chinese Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREBBXf4fQbb2FLL2D0MWk87Ss0aq3GIfXWJwVHP-C-kw&s', price: 209.00 },
@@ -31,7 +31,7 @@ const INITIAL_ITEMS = [
   { id: '19', name: 'Makhni Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2VcFpI0Yc-44bBng9q-VwAbhGtnYA2QglmdtRDWviLw&s=10', price: 229.75 },
   { id: '20', name: 'Peri Peri', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/b119d62ac06254c71c88a59807ee4a23.png', price: 238.00 },
   { id: '21', name: 'Korean Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2025/7/532155818/TV/XZ/LQ/123815550/1kg-korean-barbeque-chilli-sauce.png', price: null },
-  { id: '22', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://5.imimg.com/data5/SELLER/Default/2022/3/BA/VN/QF/1442638/40126254-2-1-amul-pizza-cheese-mozzarella-diced.jpg', price: 236.50 },
+  { id: '22', name: 'Spicy Garlic Sauce', category: 'Sauces & Dressings', unit: 'packet', image: 'https://assets.hyperpure.com/data/images/products/691d5aef911e761fe41d11f7ed8acec7.png', price: 236.50 },
 
   // Toppings
   { id: '23', name: 'Black Olives', category: 'Toppings', unit: 'jar', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRp3rbaW0gq8v72wtto_EYKtMA1M6LNj5Himn5Exm1JPA&s', price: 179.90 },
