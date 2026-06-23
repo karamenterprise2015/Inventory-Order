@@ -6,7 +6,7 @@ import { supabase } from './supabase.js';
 const INITIAL_ITEMS = [
   // Bakery
   { id: '1', name: 'Burger Bun', category: 'Bakery', unit: null, image: 'https://natashaskitchen.com/wp-content/uploads/2024/05/Burger-Buns-4.jpg', price: 6.75 },
-  { id: '2', name: 'Pizza ', category: 'Bakery', unit: null, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKeb7exNWkqx2mBz9hpgLmvlNqI5kUGkRiEosYy_1lMw&s=10', price: 19 },
+  { id: '2', name: 'Pizza ', category: 'Bakery', unit: null, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKeb7exNWkqx2mBz9hpgLmvlNqI5kUGkRiEosYy_1lMw&s=10', price: 190 },
   { id: '3', name: 'Jambo', category: 'Bakery', unit: null, image: 'https://www.girlversusdough.com/wp-content/uploads/2025/05/sandwich-bread-two-slices.jpg', price: 57 },
 
   // Milk Products
