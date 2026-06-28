@@ -343,7 +343,6 @@ export default function Home() {
     const timeStr = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     let msg = `BURGER BHAU KOTHARIYA\n\n`;
-    msg += `Date: ${dateStr}\n\n`;
 
     const grouped = order.items.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
