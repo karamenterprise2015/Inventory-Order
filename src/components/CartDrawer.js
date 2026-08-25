@@ -18,8 +18,15 @@ export default function CartDrawer({
   const [personName, setPersonName] = useState('');
   const [notes, setNotes] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  
-  // Load saved Person Name on mount
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1025);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedPerson = localStorage.getItem('inventory_person_name');
@@ -27,7 +34,6 @@ export default function CartDrawer({
     }
   }, []);
 
-  // Update person name and save to localStorage
   const handlePersonNameChange = (val) => {
     setPersonName(val);
     if (typeof window !== 'undefined') {
@@ -38,7 +44,7 @@ export default function CartDrawer({
 
   const handleConfirmOrder = () => {
     if (!personName.trim()) {
-      setErrorMsg('Your Name is required to place an order.');
+      setErrorMsg('Please enter your name to place the order.');
       const input = document.getElementById('person-name-input');
       if (input) input.scrollIntoView({ behavior: 'smooth' });
       return;
@@ -48,11 +54,24 @@ export default function CartDrawer({
 
   const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Desktop: slide from right. Mobile: slide from bottom
+  const drawerVariants = isDesktop
+    ? {
+        initial: { x: '100%' },
+        animate: { x: 0 },
+        exit: { x: '100%' },
+      }
+    : {
+        initial: { y: '100%' },
+        animate: { y: 0 },
+        exit: { y: '100%' },
+      };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop Blur Overlay */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -61,36 +80,37 @@ export default function CartDrawer({
             style={styles.overlay}
           />
 
-          {/* Slide-Up Bottom Drawer Sheet */}
+          {/* Drawer */}
           <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-            style={styles.drawer}
+            {...drawerVariants}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            style={isDesktop ? styles.drawerDesktop : styles.drawerMobile}
           >
-            {/* Grab Drag/Pull Handle */}
-            <div style={styles.handleBar} onClick={onClose}>
-              <div style={styles.handleLine} />
-            </div>
+            {/* Handle bar — mobile only */}
+            {!isDesktop && (
+              <div style={styles.handleBar} onClick={onClose}>
+                <div style={styles.handleLine} />
+              </div>
+            )}
 
-            {/* Header Area */}
+            {/* Header */}
             <div style={styles.drawerHeader}>
               <div>
                 <h2 style={styles.title}>Your Order</h2>
-                <p style={styles.subtitle}>{totalQuantity} items selected</p>
+                <p style={styles.subtitle}>{totalQuantity} {totalQuantity === 1 ? 'item' : 'items'} selected</p>
               </div>
               <motion.button
                 whileTap={{ scale: 0.9 }}
+                whileHover={{ backgroundColor: 'var(--surface-secondary)' }}
                 style={styles.closeButton}
                 onClick={onClose}
-                aria-label="Close cart"
+                aria-label="Close"
               >
-                <X size={18} strokeWidth={2.5} />
+                <X size={20} strokeWidth={2.5} />
               </motion.button>
             </div>
 
-            {/* Scrollable list of items */}
+            {/* Content */}
             <div style={styles.scrollContent} className="no-scrollbar">
               <AnimatePresence mode="popLayout">
                 {cart.length === 0 ? (
@@ -104,18 +124,19 @@ export default function CartDrawer({
                     <div style={styles.emptyIcon}>
                       <ShoppingBag size={48} color="var(--text-muted)" strokeWidth={1.5} />
                     </div>
-                    <p style={styles.emptyText}>Your cart is empty</p>
+                    <p style={styles.emptyTitle}>No items yet</p>
+                    <p style={styles.emptyDesc}>Add products from the catalog to build your order</p>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       style={styles.browseButton}
                       onClick={onClose}
                     >
-                      Browse Catalog
+                      Browse Products
                     </motion.button>
                   </motion.div>
                 ) : (
                   <div style={styles.contentWrapper}>
-                    {/* Cart Items List */}
+                    {/* Items List */}
                     <div style={styles.listContainer}>
                       <AnimatePresence mode="popLayout">
                         {cart.map((item) => (
@@ -127,26 +148,23 @@ export default function CartDrawer({
                             exit={{ opacity: 0, scale: 0.9, height: 0, marginBottom: 0 }}
                             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                           >
-                            <SwipeableItemCard
-                              item={item}
-                              updateQuantity={updateQuantity}
-                            />
+                            <CartItemCard item={item} updateQuantity={updateQuantity} />
                           </motion.div>
                         ))}
                       </AnimatePresence>
                     </div>
 
-                    {/* Order Details Form */}
-                    <div style={styles.formContainer}>
+                    {/* Form */}
+                    <div style={styles.formSection}>
                       <div style={styles.inputGroup}>
                         <label htmlFor="person-name-input" style={styles.label}>
-                          <User size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
+                          <User size={15} style={{ marginRight: '6px', color: 'var(--accent)' }} />
                           Your Name <span style={{ color: 'var(--danger)' }}>*</span>
                         </label>
                         <input
                           id="person-name-input"
                           type="text"
-                          placeholder="e.g. John Smith"
+                          placeholder="Enter your name"
                           value={personName}
                           onChange={(e) => handlePersonNameChange(e.target.value)}
                           style={{
@@ -160,7 +178,7 @@ export default function CartDrawer({
                             animate={{ opacity: 1, y: 0 }}
                             style={styles.errorText}
                           >
-                            <AlertCircle size={12} style={{ marginRight: '4px' }} />
+                            <AlertCircle size={13} style={{ marginRight: '4px' }} />
                             {errorMsg}
                           </motion.p>
                         )}
@@ -168,12 +186,12 @@ export default function CartDrawer({
 
                       <div style={styles.inputGroup}>
                         <label htmlFor="order-notes-input" style={styles.label}>
-                          <FileText size={14} style={{ marginRight: '6px', color: 'var(--text-secondary)' }} />
-                          Delivery Notes (Optional)
+                          <FileText size={15} style={{ marginRight: '6px', color: 'var(--text-muted)' }} />
+                          Notes (Optional)
                         </label>
                         <textarea
                           id="order-notes-input"
-                          placeholder="e.g., Deliver before 4 PM, call on arrival..."
+                          placeholder="Any special instructions..."
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
                           rows="2"
@@ -186,9 +204,9 @@ export default function CartDrawer({
               </AnimatePresence>
             </div>
 
-            {/* Sticky Action Footer panel */}
+            {/* Action Footer */}
             {cart.length > 0 && (
-              <div style={styles.actionPanel} className="glass-panel">
+              <div style={styles.actionPanel}>
                 <SwipeConfirm
                   onConfirm={handleConfirmOrder}
                   isSubmitting={isSubmitting}
@@ -203,89 +221,88 @@ export default function CartDrawer({
   );
 }
 
-// Card Wrapper component
-function SwipeableItemCard({ item, updateQuantity }) {
+function CartItemCard({ item, updateQuantity }) {
   return (
-    <motion.div
-      whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
-      whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-      style={styles.card}
-    >
+    <div style={styles.card}>
       <div style={styles.cardInfo}>
-        <img src={item.image} alt={item.name} style={styles.itemThumb} />
-        <div>
+        <img src={item.image} alt={item.name} style={styles.itemThumb} loading="lazy" />
+        <div style={styles.cardText}>
           <h4 style={styles.itemName}>{item.name}</h4>
           <p style={styles.itemCategory}>{item.category}</p>
         </div>
       </div>
-      
-      <div style={styles.quantityContainer}>
+      <div style={styles.quantityArea}>
         <QuantitySelector
           quantity={item.quantity}
           unit={item.unit}
           onChange={(q) => updateQuantity(item.id, q)}
         />
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 const styles = {
   overlay: {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(9, 13, 22, 0.4)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(26, 22, 19, 0.4)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
     zIndex: 2000,
   },
-  drawer: {
+
+  /* Desktop: right side panel */
+  drawerDesktop: {
     position: 'fixed',
-    bottom: 0,
-    left: 0,
+    top: 0,
     right: 0,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    width: '100%',
-    maxWidth: '480px',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    borderTopLeftRadius: '24px',
-    borderTopRightRadius: '24px',
+    width: '440px',
+    maxWidth: '100vw',
+    height: '100vh',
+    backgroundColor: 'var(--surface)',
+    borderLeft: '1px solid var(--border)',
+    boxShadow: '-12px 0 48px rgba(0, 0, 0, 0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+    zIndex: 2001,
+  },
+
+  /* Mobile: bottom sheet */
+  drawerMobile: {
+    position: 'fixed',
+    bottom: 0, left: 0, right: 0,
+    backgroundColor: 'var(--surface)',
+    borderTopLeftRadius: 'var(--radius-xl)',
+    borderTopRightRadius: 'var(--radius-xl)',
     paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
-    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+    boxShadow: '0 -8px 40px rgba(0, 0, 0, 0.12)',
     maxHeight: '90vh',
     display: 'flex',
     flexDirection: 'column',
     zIndex: 2001,
-    border: '1px solid rgba(255, 255, 255, 0.4)',
-    borderBottom: 'none',
   },
+
   handleBar: {
     width: '100%',
-    height: '24px',
+    height: '28px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
   },
   handleLine: {
-    width: '38px',
+    width: '40px',
     height: '4px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    backgroundColor: 'var(--border)',
   },
   drawerHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '0 24px 16px 24px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.3)',
+    padding: '16px 24px',
+    borderBottom: '1px solid var(--border)',
   },
   title: {
     fontSize: '20px',
@@ -297,155 +314,168 @@ const styles = {
     fontSize: '13px',
     color: 'var(--text-secondary)',
     fontWeight: '600',
+    marginTop: '2px',
   },
   closeButton: {
-    width: '34px',
-    height: '34px',
+    width: '38px',
+    height: '38px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    backgroundColor: 'var(--surface-secondary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: 'var(--text-secondary)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s ease',
   },
   scrollContent: {
     flex: 1,
     overflowY: 'auto',
-    padding: '24px',
+    padding: '20px 24px',
   },
   contentWrapper: {
     display: 'flex',
     flexDirection: 'column',
   },
+
+  /* Empty state */
   emptyState: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '50px 0',
+    textAlign: 'center',
   },
   emptyIcon: {
     width: '80px',
     height: '80px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    backgroundColor: 'var(--surface-secondary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: '18px',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
   },
-  emptyText: {
-    fontSize: '15px',
+  emptyTitle: {
+    fontSize: '17px',
     fontWeight: '700',
+    color: 'var(--text-primary)',
+    marginBottom: '6px',
+  },
+  emptyDesc: {
+    fontSize: '13px',
     color: 'var(--text-secondary)',
-    marginBottom: '18px',
+    marginBottom: '20px',
+    maxWidth: '240px',
   },
   browseButton: {
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    backgroundColor: 'var(--accent-light)',
     color: 'var(--accent)',
-    padding: '10px 22px',
+    padding: '10px 24px',
     borderRadius: 'var(--radius-full)',
     fontWeight: '700',
-    fontSize: '13px',
-    border: '1px solid rgba(99, 102, 241, 0.3)',
+    fontSize: '14px',
+    border: '1px solid rgba(230, 126, 34, 0.2)',
+    cursor: 'pointer',
   },
+
+  /* Item cards */
   listContainer: {
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden',
+    gap: '8px',
   },
   card: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '16px',
-    marginBottom: '12px',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+    padding: '14px 16px',
+    backgroundColor: 'var(--surface-secondary)',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--border)',
+    gap: '14px',
   },
   cardInfo: {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
+    flex: 1,
+    minWidth: 0,
+  },
+  cardText: {
+    flex: 1,
+    minWidth: 0,
   },
   itemThumb: {
-    width: '46px',
-    height: '46px',
-    borderRadius: '12px',
+    width: '56px',
+    height: '56px',
+    borderRadius: 'var(--radius-md)',
     objectFit: 'cover',
+    flexShrink: 0,
   },
   itemName: {
-    fontSize: '14px',
-    fontWeight: '700',
+    fontSize: '16px',
+    fontWeight: '800',
     color: 'var(--text-primary)',
+    fontFamily: 'var(--font-heading)',
+    lineHeight: '1.25',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   itemCategory: {
-    fontSize: '11px',
+    fontSize: '13px',
     color: 'var(--text-secondary)',
-    fontWeight: '500',
+    fontWeight: '600',
     marginTop: '2px',
   },
-  quantityContainer: {
-    zIndex: 10,
+  quantityArea: {
+    flexShrink: 0,
   },
-  formContainer: {
-    borderTop: '1px solid rgba(255, 255, 255, 0.3)',
-    paddingTop: '24px',
-    marginTop: '12px',
+
+  /* Form */
+  formSection: {
+    borderTop: '1px solid var(--border)',
+    paddingTop: '20px',
+    marginTop: '16px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '16px',
   },
   inputGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
   },
   label: {
-    fontSize: '13px',
-    fontWeight: '700',
+    fontSize: '14px',
+    fontWeight: '800',
     color: 'var(--text-primary)',
     display: 'flex',
     alignItems: 'center',
+    fontFamily: 'var(--font-heading)',
   },
   textInput: {
     padding: '12px 16px',
-    borderRadius: '12px',
-    borderWidth: '1px',
+    borderRadius: 'var(--radius-sm)',
+    borderWidth: '1.5px',
     borderStyle: 'solid',
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    fontSize: '14px',
+    backgroundColor: 'var(--surface)',
+    fontSize: '15px',
     color: 'var(--text-primary)',
-    transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+    transition: 'border-color 0.15s ease',
   },
   textareaInput: {
     padding: '12px 16px',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    fontSize: '14px',
+    borderRadius: 'var(--radius-sm)',
+    border: '1.5px solid var(--border)',
+    backgroundColor: 'var(--surface)',
+    fontSize: '15px',
     color: 'var(--text-primary)',
     resize: 'none',
     fontFamily: 'inherit',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
   },
   errorText: {
     fontSize: '12px',
@@ -453,17 +483,12 @@ const styles = {
     fontWeight: '600',
     display: 'flex',
     alignItems: 'center',
-    marginTop: '2px',
   },
+
+  /* Action panel */
   actionPanel: {
     padding: '16px 24px',
-    borderTop: '1px solid rgba(255, 255, 255, 0.3)',
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    borderTopLeftRadius: '16px',
-    borderTopRightRadius: '16px',
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    borderTop: '1px solid var(--border)',
+    backgroundColor: 'var(--surface)',
   },
 };

@@ -48,48 +48,48 @@ export default function QuantitySelector({ quantity, onChange, unit = null }) {
     <div style={styles.container}>
       <AnimatePresence mode="wait">
         {quantity === 0 ? (
-          // Add Button state
           <motion.button
             key="add-btn"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.05, boxShadow: '0 6px 20px rgba(230, 126, 34, 0.3)' }}
+            onClick={handleIncrement}
+            style={styles.addButton}
+            className="ripple-effect"
+          >
+            <span style={styles.addText}>Add</span>
+            <Plus size={16} strokeWidth={3} />
+          </motion.button>
+        ) : (
+          <motion.div
+            key="qty-adjust"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.03 }}
-            onClick={handleIncrement}
-            style={styles.addButton}
+            style={styles.selectorWrap}
           >
-            <span>Add</span>
-            <Plus size={15} strokeWidth={3} />
-          </motion.button>
-        ) : (
-          // Extended quantity adjuster controls
-          <motion.div
-            key="qty-adjust"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            style={styles.selectorContainer}
-          >
-            {/* Minus Button */}
+            {/* Minus */}
             <motion.button
               whileTap={{ scale: 0.8 }}
+              whileHover={{ backgroundColor: 'rgba(231, 76, 60, 0.1)' }}
               onClick={handleDecrement}
-              style={styles.adjustButton}
+              style={styles.adjustBtn}
               aria-label="Decrease quantity"
             >
-              <Minus size={14} strokeWidth={3} />
+              <Minus size={16} strokeWidth={3} color={quantity === 1 ? 'var(--danger)' : 'var(--text-primary)'} />
             </motion.button>
-            
-            {/* Quantity text display */}
-            <div style={styles.valueWrapper}>
+
+            {/* Quantity Display */}
+            <div style={styles.valueArea}>
               <AnimatePresence mode="popLayout">
                 {isEditing ? (
                   <motion.input
                     key="input"
-                    initial={{ scale: 0.95 }}
+                    initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
-                    exit={{ scale: 0.95 }}
+                    exit={{ scale: 0.9 }}
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
@@ -103,28 +103,32 @@ export default function QuantitySelector({ quantity, onChange, unit = null }) {
                 ) : (
                   <motion.span
                     key={quantity}
-                    initial={{ y: 8, opacity: 0 }}
+                    initial={{ y: 10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -8, opacity: 0 }}
+                    exit={{ y: -10, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 350, damping: 20 }}
                     style={styles.quantityValue}
                     onClick={handleQuantityClick}
+                    title="Tap to type quantity"
                   >
                     {quantity}
                   </motion.span>
                 )}
               </AnimatePresence>
-              {!isEditing && unit && <span style={styles.unitText}>{unit}</span>}
+              {!isEditing && unit && (
+                <span style={styles.unitLabel}>{unit}</span>
+              )}
             </div>
 
-            {/* Plus Button */}
+            {/* Plus */}
             <motion.button
               whileTap={{ scale: 0.8 }}
+              whileHover={{ backgroundColor: 'rgba(230, 126, 34, 0.1)' }}
               onClick={handleIncrement}
-              style={styles.adjustButton}
+              style={styles.adjustBtn}
               aria-label="Increase quantity"
             >
-              <Plus size={14} strokeWidth={3} />
+              <Plus size={16} strokeWidth={3} color="var(--accent)" />
             </motion.button>
           </motion.div>
         )}
@@ -135,7 +139,7 @@ export default function QuantitySelector({ quantity, onChange, unit = null }) {
 
 const styles = {
   container: {
-    height: '42px',
+    height: '44px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -145,81 +149,85 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '6px',
-    backgroundColor: 'rgba(99, 102, 241, 0.9)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    background: 'var(--accent-gradient)',
     color: '#ffffff',
-    height: '38px',
-    padding: '0 18px',
+    height: '44px',
+    padding: '0 22px',
     borderRadius: 'var(--radius-full)',
-    fontWeight: '700',
-    fontSize: '13px',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+    fontWeight: '800',
+    fontSize: '15px',
+    fontFamily: 'var(--font-heading)',
+    border: 'none',
+    boxShadow: '0 4px 14px rgba(230, 126, 34, 0.3)',
+    cursor: 'pointer',
+    WebkitTapHighlightColor: 'transparent',
   },
-  selectorContainer: {
+  addText: {
+    letterSpacing: '-0.01em',
+  },
+  selectorWrap: {
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
+    backgroundColor: 'var(--surface)',
     borderRadius: 'var(--radius-full)',
     padding: '3px',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02), 0 2px 8px rgba(0, 0, 0, 0.04)',
-    height: '38px',
+    border: '2px solid var(--accent)',
+    height: '44px',
+    boxShadow: '0 2px 10px rgba(230, 126, 34, 0.15)',
   },
-  adjustButton: {
-    width: '32px',
-    height: '32px',
+  adjustBtn: {
+    width: '36px',
+    height: '36px',
     borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    color: 'var(--text-primary)',
+    backgroundColor: 'var(--surface-secondary)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s ease',
+    flexShrink: 0,
+    WebkitTapHighlightColor: 'transparent',
   },
-  valueWrapper: {
+  valueArea: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '0 10px',
-    minWidth: '46px',
+    padding: '0 12px',
+    minWidth: '52px',
     overflow: 'hidden',
   },
   quantityValue: {
-    fontSize: '14px',
+    fontSize: '18px',
     fontWeight: '800',
     color: 'var(--text-primary)',
     lineHeight: '1.1',
     cursor: 'pointer',
+    fontFamily: 'var(--font-heading)',
   },
   quantityInput: {
-    fontSize: '14px',
+    fontSize: '18px',
     fontWeight: '800',
     color: 'var(--text-primary)',
     lineHeight: '1.1',
-    width: '46px',
+    width: '52px',
     textAlign: 'center',
     border: 'none',
     background: 'transparent',
     outline: 'none',
     padding: 0,
     margin: 0,
+    fontFamily: 'var(--font-heading)',
     WebkitAppearance: 'none',
     MozAppearance: 'textfield',
   },
-  unitText: {
-    fontSize: '8px',
+  unitLabel: {
+    fontSize: '10px',
     color: 'var(--text-secondary)',
     fontWeight: '700',
     textTransform: 'uppercase',
     marginTop: '1px',
-    letterSpacing: '0.02em',
+    letterSpacing: '0.03em',
   },
 };

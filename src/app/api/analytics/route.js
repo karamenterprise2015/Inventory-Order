@@ -4,8 +4,11 @@ import { db } from '@/lib/db';
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const year = searchParams.get('year') ? parseInt(searchParams.get('year')) : null;
-    const month = searchParams.get('month') ? parseInt(searchParams.get('month')) : undefined;
+    const yearParam = searchParams.get('year');
+    const monthParam = searchParams.get('month');
+
+    const year = (yearParam && yearParam !== 'all') ? parseInt(yearParam, 10) : null;
+    const month = (monthParam !== null && monthParam !== undefined && monthParam !== 'all' && monthParam !== '') ? parseInt(monthParam, 10) : undefined;
 
     const analytics = await db.getAnalytics(year, month);
     return NextResponse.json({ success: true, analytics });

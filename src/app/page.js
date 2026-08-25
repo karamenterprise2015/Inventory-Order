@@ -3,127 +3,102 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search,
-  Moon,
-  Sun,
-  ShoppingCart,
-  MapPin,
-  RefreshCw,
-  ArrowRight,
-  ClipboardList,
-  ChevronRight,
-  FileText,
-  AlertCircle,
-  X,
-  BarChart3,
-  Clock,
-  Calendar,
-  Eye,
-  EyeOff,
-  MessageCircle,
-  CheckCircle2,
-  Copy,
-  Check
+  Search, Moon, Sun, ShoppingCart, RefreshCw, ArrowRight,
+  ClipboardList, ChevronRight, AlertCircle, X, Clock,
+  Eye, EyeOff, MessageCircle, CheckCircle2, Copy, Check, Flame, ShoppingBag
 } from 'lucide-react';
 import BottomNavigation from '@/components/BottomNavigation';
 import QuantitySelector from '@/components/QuantitySelector';
 import CartDrawer from '@/components/CartDrawer';
-import ProductSalesBarChart from '@/components/ProductSalesBarChart';
-import CategoryDistributionDonutChart from '@/components/CategoryDistributionDonutChart';
 import ShowOrder from '@/components/ShowOrder';
 import AnalyticsDashboard from '@/components/AnalyticsDashboard';
 
-// Animation variants for staggered catalog entrance
-const catalogVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.03
-    }
-  }
+const categoryEmojis = {
+  'Bakery': '🥖',
+  'Milk Products': '🧀',
+  'Sauces & Dressings': '🥫',
+  'Toppings': '🫒',
+  'Frozen/Prepared Foods': '🍟',
+  'Packaging/Boxes': '📦',
+  'Spices/Seasonings': '🌶️',
+  'Oils & Fats': '🧈',
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 24
-    }
-  }
+// ─── Animation Variants ──────────────────────────────────
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.04 } },
+};
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('catalog'); // 'catalog' | 'orders' | 'analytics'
+  const [activeTab, setActiveTab] = useState('catalog');
   const [items, setItems] = useState([]);
   const [orders, setOrders] = useState([]);
-  const [cart, setCart] = useState([]); // Array of { id, name, category, unit, quantity, image }
+  const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [theme, setTheme] = useState('light');
   const [showPrice, setShowPrice] = useState(false);
-  
-  // Order submission statuses
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
-  // Cancel order confirmation
   const [orderToCancel, setOrderToCancel] = useState(null);
-
-  // Show order details
   const [orderToView, setOrderToView] = useState(null);
-
-  // Confirmed order intermediate step (before WhatsApp)
   const [confirmedOrder, setConfirmedOrder] = useState(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+  const [confettiPieces, setConfettiPieces] = useState([]);
 
-  // Analytics state
   const [analytics, setAnalytics] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
-  const catalogContainerRef = useRef(null);
   const observerRef = useRef(null);
 
-  // Initialize theme and fetch database records
+  const triggerConfetti = () => {
+    const colors = ['#e67e22', '#f39c12', '#2ecc71', '#3498db', '#e74c3c', '#9b59b6'];
+    const pieces = Array.from({ length: 36 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      color: colors[i % colors.length],
+      size: 8 + Math.random() * 8,
+      delay: Math.random() * 0.4,
+    }));
+    setConfettiPieces(pieces);
+    setTimeout(() => setConfettiPieces([]), 3000);
+  };
+
+  // ─── Init ──────────────────────────────────────────────
   useEffect(() => {
-    // Load theme setting
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('inventory_theme') || 'light';
-      setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      const saved = localStorage.getItem('inventory_theme') || 'light';
+      setTheme(saved);
+      document.documentElement.setAttribute('data-theme', saved);
     }
 
-    // Fetch initial inventory items
     fetch('/api/items')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setItems(data.items);
-          if (data.items.length > 0) {
-            setActiveCategory(data.items[0].category);
-          }
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          setItems(d.items);
+          if (d.items.length > 0) setActiveCategory(d.items[0].category);
         }
       })
-      .catch((err) => console.error('Failed to load items:', err))
+      .catch(e => console.error('Failed to load items:', e))
       .finally(() => setLoading(false));
 
-    // Fetch orders history records
     fetchOrders();
   }, []);
 
-  // Fetch analytics when tab changes or filters change
   useEffect(() => {
-    if (activeTab === 'analytics') {
-      fetchAnalytics();
-    }
+    if (activeTab === 'analytics') fetchAnalytics();
   }, [activeTab, selectedYear, selectedMonth]);
 
   const fetchAnalytics = async () => {
@@ -132,15 +107,11 @@ export default function Home() {
       const params = new URLSearchParams();
       if (selectedYear) params.append('year', selectedYear);
       if (selectedMonth !== undefined) params.append('month', selectedMonth);
-      
-      const response = await fetch(`/api/analytics?${params}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setAnalytics(data.analytics);
-      }
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      const res = await fetch(`/api/analytics?${params}`);
+      const data = await res.json();
+      if (data.success) setAnalytics(data.analytics);
+    } catch (e) {
+      console.error('Failed to fetch analytics:', e);
     } finally {
       setAnalyticsLoading(false);
     }
@@ -148,179 +119,113 @@ export default function Home() {
 
   const fetchOrders = () => {
     fetch('/api/orders')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setOrders(data.orders);
-        }
-      })
-      .catch((err) => console.error('Failed to load orders:', err));
+      .then(r => r.json())
+      .then(d => { if (d.success) setOrders(d.orders); })
+      .catch(e => console.error('Failed to load orders:', e));
   };
 
-  // Toggle Theme Mode
   const toggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(nextTheme);
-    localStorage.setItem('inventory_theme', nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
+    const next = theme === 'light' ? 'dark' : 'light';
+    setTheme(next);
+    localStorage.setItem('inventory_theme', next);
+    document.documentElement.setAttribute('data-theme', next);
   };
 
-  // Unique category extraction
-  const categories = Array.from(new Set(items.map((item) => item.category)));
-
-  // Filter items matching query
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  // ─── Data ──────────────────────────────────────────────
+  const categories = Array.from(new Set(items.map(i => i.category)));
+  const filteredItems = items.filter(i =>
+    i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    i.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
 
-  // Scrollspy to set active category during vertical scroll
+  // ─── Scrollspy ─────────────────────────────────────────
   useEffect(() => {
     if (activeTab !== 'catalog' || loading || categories.length === 0) return;
-
     if (observerRef.current) observerRef.current.disconnect();
 
-    const observerOptions = {
-      root: null,
-      rootMargin: '-12% 0px -75% 0px', // focused top-center window scrollspy
-      threshold: 0,
-    };
-
     observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const categoryName = entry.target.getAttribute('data-category');
-          if (categoryName) {
-            setActiveCategory(categoryName);
-          }
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const cat = e.target.getAttribute('data-category');
+          if (cat) setActiveCategory(cat);
         }
       });
-    }, observerOptions);
+    }, { root: null, rootMargin: '-12% 0px -75% 0px', threshold: 0 });
 
-    categories.forEach((cat) => {
+    categories.forEach(cat => {
       const el = document.getElementById(`cat-section-${encodeURIComponent(cat)}`);
       if (el) observerRef.current.observe(el);
     });
 
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect();
-    };
+    return () => { if (observerRef.current) observerRef.current.disconnect(); };
   }, [activeTab, loading, items, searchQuery]);
 
-  // Scrollspy jumps scroll position smoothly to selected category section
   const scrollToCategory = (cat) => {
     setActiveCategory(cat);
-    // Small delay to ensure DOM is ready
     setTimeout(() => {
       const el = document.getElementById(`cat-section-${encodeURIComponent(cat)}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        console.warn(`Category section not found: ${cat}`);
-        // Try without encoding as fallback
-        const fallbackEl = document.getElementById(`cat-section-${cat}`);
-        if (fallbackEl) {
-          fallbackEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
-  // Custom Flying Particle Dot animation to Cart
+  // ─── Cart Actions ──────────────────────────────────────
   const triggerFlyAnimation = (e) => {
     if (!e) return;
-    
     const rect = e.currentTarget.getBoundingClientRect();
     const startX = rect.left + rect.width / 2;
     const startY = rect.top + rect.height / 2;
-
-    const destEl = document.getElementById('nav-cart-btn');
+    const destEl = document.getElementById('floating-cart-btn');
     if (!destEl) return;
-
     const destRect = destEl.getBoundingClientRect();
-    const destX = destRect.left + destRect.width / 2;
-    const destY = destRect.top + destRect.height / 2;
-
     const particle = document.createElement('div');
     particle.className = 'flying-particle flying-particle-animated';
     particle.style.left = `${startX - 7}px`;
     particle.style.top = `${startY - 7}px`;
-
-    // Coordinates calculations
-    particle.style.setProperty('--mid-x', `${(destX - startX) * 0.45}px`);
-    particle.style.setProperty('--mid-y', `${-120}px`);
-    particle.style.setProperty('--dest-x', `${destX - startX}px`);
-    particle.style.setProperty('--dest-y', `${destY - startY}px`);
-
+    particle.style.setProperty('--mid-x', `${(destRect.left + destRect.width / 2 - startX) * 0.45}px`);
+    particle.style.setProperty('--mid-y', '-120px');
+    particle.style.setProperty('--dest-x', `${destRect.left + destRect.width / 2 - startX}px`);
+    particle.style.setProperty('--dest-y', `${destRect.top + destRect.height / 2 - startY}px`);
     document.body.appendChild(particle);
-
-    setTimeout(() => {
-      particle.remove();
-      const badge = document.getElementById('cart-floating-badge');
-      if (badge) {
-        badge.classList.remove('animate-pop');
-        void badge.offsetWidth; // restart pop
-        badge.classList.add('animate-pop');
-      }
-    }, 600);
+    setTimeout(() => particle.remove(), 600);
   };
 
-  // Quantity updates
   const updateQuantity = (itemId, newQty, event) => {
-    const item = items.find((i) => i.id === itemId);
+    const item = items.find(i => i.id === itemId);
     if (!item) return;
-
-    const existing = cart.find((i) => i.id === itemId);
-    const isIncrease = newQty > (existing ? existing.quantity : 0);
-    
-    if (isIncrease && event) {
-      triggerFlyAnimation(event);
-    }
-
+    const existing = cart.find(i => i.id === itemId);
+    if (newQty > (existing ? existing.quantity : 0) && event) triggerFlyAnimation(event);
     if (newQty <= 0) {
-      setCart((prev) => prev.filter((i) => i.id !== itemId));
+      setCart(prev => prev.filter(i => i.id !== itemId));
     } else {
-      setCart((prev) => {
-        const index = prev.findIndex((i) => i.id === itemId);
-        if (index > -1) {
-          const updated = [...prev];
-          updated[index] = { ...updated[index], quantity: newQty };
-          return updated;
-        } else {
-          return [...prev, { ...item, quantity: newQty }];
+      setCart(prev => {
+        const idx = prev.findIndex(i => i.id === itemId);
+        if (idx > -1) {
+          const u = [...prev]; u[idx] = { ...u[idx], quantity: newQty }; return u;
         }
+        return [...prev, { ...item, quantity: newQty }];
       });
     }
   };
 
-  // Submit order + trigger WhatsApp
+  // ─── Order Actions ─────────────────────────────────────
   const handlePlaceOrder = async (formData) => {
     setIsSubmitting(true);
-    
     try {
-      const response = await fetch('/api/orders', {
+      const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           personName: formData.personName,
           notes: formData.notes,
-          items: cart.map((i) => ({
-            id: i.id,
-            name: i.name,
-            category: i.category,
-            unit: i.unit,
-            quantity: i.quantity,
-          })),
+          items: cart.map(i => ({ id: i.id, name: i.name, category: i.category, unit: i.unit, quantity: i.quantity })),
         }),
       });
-
-      const data = await response.json();
-
+      const data = await res.json();
       if (data.success) {
         setIsSuccess(true);
-        fetchOrders(); // update orders history in background
-
-        // Show confirmed overlay immediately — no delay
+        triggerConfetti();
+        fetchOrders();
         setCart([]);
         setIsSubmitting(false);
         setIsSuccess(false);
@@ -330,53 +235,37 @@ export default function Home() {
         alert(data.error || 'Failed to submit order');
         setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error('Order request failed:', error);
-      alert('Error submitting order. Please check connection and try again.');
+    } catch (e) {
+      alert('Error submitting order. Please check connection.');
       setIsSubmitting(false);
     }
   };
 
   const formatWhatsAppMessage = (order) => {
-    const orderDate = new Date(order.createdAt);
-    const dateStr = orderDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-    const timeStr = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    let msg = `BURGER BHAU KOTHARIYA\n\n`;
-
+    let msg = `BURGER BHAU\n\n`;
     const grouped = order.items.reduce((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
       acc[item.category].push(item);
       return acc;
     }, {});
-
-    Object.keys(grouped).forEach((cat) => {
+    Object.keys(grouped).forEach(cat => {
       msg += `▸ *${cat}*\n`;
-      grouped[cat].forEach((item) => {
-        const unitStr = item.unit ? item.unit : '';
-        msg += `   ${item.name} - ${item.quantity}${unitStr}\n`;
+      grouped[cat].forEach(item => {
+        msg += `   ${item.name} - ${item.quantity}${item.unit || ''}\n`;
       });
-      msg += `\n`;
+      msg += '\n';
     });
-
-    if (order.notes) {
-      msg += `📝 *Notes:* ${order.notes}\n`;
-    }
-
+    if (order.notes) msg += `📝 *Notes:* ${order.notes}\n`;
     return msg;
   };
 
-  // Send confirmed order to WhatsApp
   const handleSendToWhatsApp = () => {
     if (!confirmedOrder) return;
-    const whatsappText = formatWhatsAppMessage(confirmedOrder);
-    const encodedText = encodeURIComponent(whatsappText);
-    const whatsappUrl = `https://wa.me/?text=${encodedText}`;
-    window.open(whatsappUrl, '_blank');
+    const text = formatWhatsAppMessage(confirmedOrder);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     setConfirmedOrder(null);
   };
 
-  // Copy order text to clipboard
   const handleCopyOrderText = async () => {
     if (!confirmedOrder) return;
     const text = formatWhatsAppMessage(confirmedOrder);
@@ -385,7 +274,6 @@ export default function Home() {
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
     } catch {
-      // fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -397,667 +285,517 @@ export default function Home() {
     }
   };
 
-  // Dismiss the confirmed order overlay
-  const handleDismissConfirmed = () => {
-    setConfirmedOrder(null);
-  };
-
   const handleReorder = (order) => {
-    const restoredCart = order.items.map((ordItem) => {
-      const baseItem = items.find((i) => i.id === ordItem.id) || {};
-      return {
-        id: ordItem.id,
-        name: ordItem.name,
-        category: ordItem.category,
-        unit: ordItem.unit,
-        quantity: ordItem.quantity,
-        image: baseItem.image || 'https://images.unsplash.com/photo-1528750901443-d93a7782d132?w=400',
-      };
+    const restored = order.items.map(o => {
+      const base = items.find(i => i.id === o.id) || {};
+      return { id: o.id, name: o.name, category: o.category, unit: o.unit, quantity: o.quantity, image: base.image || '' };
     });
-
-    setCart(restoredCart);
+    setCart(restored);
     setActiveTab('catalog');
     setIsCartOpen(true);
   };
 
   const handleCancelOrder = async (orderId) => {
     try {
-      const response = await fetch(`/api/orders?id=${orderId}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        fetchOrders(); // Refresh orders list
-        setOrderToCancel(null);
-      } else {
-        alert(data.error || 'Failed to cancel order');
-      }
-    } catch (error) {
-      console.error('Cancel order error:', error);
-      alert('Error cancelling order. Please try again.');
-    }
+      const res = await fetch(`/api/orders?id=${orderId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) { fetchOrders(); setOrderToCancel(null); }
+      else alert(data.error || 'Failed to cancel order');
+    } catch (e) { alert('Error cancelling order.'); }
   };
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
+  // ─── RENDER ────────────────────────────────────────────
   return (
-    <div className="container" style={styles.rootContainer}>
-      {/* Designer Glassmorphic Header */}
-      <header style={styles.header} className="glass-panel">
-        <div>
-          <h1 style={styles.appTitle}>Order Panel</h1>
-          <p style={styles.appSubtitle}>Store Inventory Management</p>
-        </div>
-        <div style={{ display: 'flex',flexWrap: 'wrap', gap: '0.5rem'
-        }}> {/* Light/Dark mode toggler */}
+    <div className="app-shell">
+      {/* Confetti Particles Overlay */}
+      {confettiPieces.map((p) => (
+        <div
+          key={p.id}
+          className="confetti-piece"
+          style={{
+            left: `${p.x}%`,
+            top: `-20px`,
+            backgroundColor: p.color,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+
+      {/* Sidebar Nav (desktop only — rendered by BottomNavigation) */}
+      <BottomNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {/* Main Content */}
+      <main className="app-main">
+        {/* ─── Mobile Header ─── */}
+        <header style={styles.header}>
+          <div style={styles.headerLeft}>
+            <div className="mobile-only" style={styles.headerBrand}>
+              <div style={styles.brandIconSmall}>
+                <Flame size={18} color="#fff" strokeWidth={2.5} />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <h1 style={styles.headerTitle}>Burger Bhau</h1>
+                  <span style={styles.headerProTag}>Kothariya</span>
+                </div>
+              </div>
+            </div>
+            <h1 className="desktop-only" style={styles.headerTitleDesktop}>
+              {activeTab === 'catalog' ? 'Products' : activeTab === 'orders' ? 'Order History' : 'Reports'}
+            </h1>
+          </div>
+          <div style={styles.headerActions}>
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={toggleTheme}
-              style={styles.themeToggle}
-              aria-label="Toggle theme mode"
+              style={styles.iconBtn}
+              aria-label="Toggle theme"
             >
-              {theme === 'light' ? (
-                <Moon size={18} strokeWidth={2.5} />
-              ) : (
-                <Sun size={18} strokeWidth={2.5} />
-              )}
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </motion.button>
-
-            {/* Price visibility toggle */}
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowPrice(!showPrice)}
               style={{
-                ...styles.themeToggle,
-                backgroundColor: showPrice ? 'var(--accent)' : 'var(--surface)',
-                color: showPrice ? '#ffffff' : 'var(--text-secondary)',
+                ...styles.iconBtn,
+                backgroundColor: showPrice ? 'var(--accent)' : 'var(--surface-secondary)',
+                color: showPrice ? '#fff' : 'var(--text-secondary)',
               }}
-              aria-label="Toggle price visibility"
+              aria-label="Toggle prices"
             >
-              {showPrice ? (
-                <Eye size={18} strokeWidth={2.5} />
-              ) : (
-                <EyeOff size={18} strokeWidth={2.5} />
-              )}
-            </motion.button></div>
-           
-          </header>
-      
-        
-
-      {/* Primary Panels views */}
-      {activeTab === 'catalog' ? (
-        <div ref={catalogContainerRef} style={styles.contentWrap}>
-          {/* Sticky search input and scrollspy badges list */}
-          <div style={styles.stickyToolbar} className="glass-panel">
-            <div style={styles.searchWrapper}>
-              <Search style={styles.searchIcon} size={16} strokeWidth={2.5} />
-              <input
-                type="text"
-                placeholder="Search products or categories..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={styles.searchInput}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  style={styles.clearSearch}
-                  aria-label="Clear search query"
-                >
-                  <X size={14} strokeWidth={2.5} />
-                </button>
-              )}
-            </div>
-
-            {/* Horizontal badgelist */}
-            {!searchQuery && categories.length > 0 && (
-              <div style={styles.categoriesBar} className="no-scrollbar">
-                {categories.map((cat) => (
-                  <motion.button
-                    key={cat}
-                    onClick={() => scrollToCategory(cat)}
-                    whileHover={{ y: -2 }}
-                    whileTap={{ y: 1 }}
-                    style={{
-                      ...styles.categoryBadge,
-                      backgroundColor: activeCategory === cat ? 'var(--accent)' : 'var(--surface)',
-                      color: activeCategory === cat ? '#ffffff' : 'var(--text-secondary)',
-                      borderColor: activeCategory === cat ? 'var(--accent)' : 'var(--border)',
-                      boxShadow: activeCategory === cat ? '0 4px 10px rgba(99, 102, 241, 0.25)' : 'var(--shadow-3d)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {cat}
-                  </motion.button>
-                ))}
-              </div>
-            )}
+              {showPrice ? <Eye size={18} /> : <EyeOff size={18} />}
+            </motion.button>
           </div>
+        </header>
 
-          {/* Loading Skeletal State */}
-          {loading ? (
-            <div style={styles.loadingWrap}>
-              {[1, 2, 3, 4].map((n) => (
-                <div key={n} style={styles.skeletonCard} className="animate-pulse">
-                  <div style={styles.skeletonThumb} className="skeleton" />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ height: '16px', width: '65%', borderRadius: 'var(--radius-xs)' }} className="skeleton" />
-                    <div style={{ height: '12px', width: '30%', borderRadius: 'var(--radius-xs)' }} className="skeleton" />
-                  </div>
+        {/* ─── Tab Content ─── */}
+        <div style={styles.contentArea}>
+          {activeTab === 'catalog' ? (
+            <>
+              {/* Search + Category Bar */}
+              <div style={styles.toolbar}>
+                <div style={styles.searchWrap}>
+                  <Search style={styles.searchIcon} size={18} />
+                  <input
+                    type="text"
+                    placeholder="Search bun, cheese, sauces..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    style={styles.searchInput}
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} style={styles.clearBtn} aria-label="Clear">
+                      <X size={14} />
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : filteredItems.length === 0 ? (
-            // Custom Search empty state
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={styles.emptyWrap}
-            >
-              <div style={styles.emptyCircleIcon}>
-                <Search size={32} color="var(--text-muted)" />
-              </div>
-              <h3 style={{ marginTop: '16px', color: 'var(--text-primary)', fontSize: '16px', fontWeight: '800' }}>No Matches Found</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', textAlign: 'center', marginTop: '6px', maxWidth: '240px' }}>
-                We couldn't find items matching "{searchQuery}". Double-check spelling or try other keywords.
-              </p>
-            </motion.div>
-          ) : (
-            // Catalog listings
-            <motion.div
-              variants={catalogVariants}
-              initial="hidden"
-              animate="show"
-              style={styles.catalogList}
-            >
-              {categories.map((cat) => {
-                const categoryItems = filteredItems.filter((i) => i.category === cat);
-                if (categoryItems.length === 0) return null;
 
-                return (
-                  <div
-                    key={cat}
-                    id={`cat-section-${encodeURIComponent(cat)}`}
-                    data-category={cat}
-                    style={styles.categorySection}
-                  >
-                    <h3 style={styles.categoryTitle}>
-                      <span style={{ width: '4px', height: '16px', backgroundColor: 'var(--accent)', borderRadius: 'var(--radius-xs)', display: 'inline-block' }}></span>
-                      {cat}
-                    </h3>
-                    <div style={styles.cardsGrid}>
-                      {categoryItems.map((item) => {
-                        const cartItem = cart.find((c) => c.id === item.id);
-                        const quantity = cartItem ? cartItem.quantity : 0;
-
-                        return (
-                          <motion.div
-                            key={item.id}
-                            variants={itemVariants}
-                            style={{
-                              ...styles.productCard,
-                              boxShadow: 'var(--shadow-3d)',
-                            }}
-                            whileHover={{ y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
-                            whileTap={{ y: 2, boxShadow: 'var(--shadow-3d-active)' }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                          >
-                            <img src={item.image} alt={item.name} style={styles.productThumb} />
-                            <div style={styles.productInfo}>
-                              <h4 style={styles.productName}>{item.name}</h4>
-                              {item.unit && <span style={styles.productUnitBadge}>{item.unit}</span>}
-                              {showPrice && item.price && (
-                                <span style={styles.priceBadge}>₹{item.price.toFixed(2)}</span>
-                              )}
-                            </div>
-                            <div style={styles.selectorWrapper}>
-                              <QuantitySelector
-                                quantity={quantity}
-                                unit={item.unit}
-                                onChange={(q, e) => updateQuantity(item.id, q, e)}
-                              />
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </motion.div>
-          )}
-        </div>
-      ) : activeTab === 'orders' ? (
-        /* Orders History Panel view */
-        <div style={styles.contentWrap}>
-          <div style={styles.historyHeader}>
-            <h2 style={styles.sectionHeading}>Order History</h2>
-            <span style={styles.historyCounter}>
-              {orders.length} orders log
-            </span>
-          </div>
-
-          {orders.length === 0 ? (
-            // Custom Orders History empty state
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={styles.emptyWrap}
-            >
-              <div style={styles.emptyCircleIcon}>
-                <ClipboardList size={32} color="var(--text-muted)" />
-              </div>
-              <h3 style={{ marginTop: '16px', color: 'var(--text-primary)', fontSize: '16px', fontWeight: '800' }}>No Past Orders</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', textAlign: 'center', marginTop: '6px', maxWidth: '240px' }}>
-                You haven't submitted any inventory orders. Try ordering items from the catalog.
-              </p>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveTab('catalog')}
-                style={styles.createFirstOrderButton}
-              >
-                Start Ordering
-              </motion.button>
-            </motion.div>
-          ) : (
-            <motion.div
-              variants={catalogVariants}
-              initial="hidden"
-              animate="show"
-              style={styles.historyList}
-            >
-              {orders.map((order) => {
-                // Generate initials for avatar
-                const initials = order.personName
-                  ? order.personName.trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                  : '?';
-                
-                // Format date and time
-                const orderDate = new Date(order.createdAt);
-                const dateStr = orderDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                const timeStr = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                const isCancelled = order.status === 'Cancelled';
-
-                return (
-                  <motion.div
-                    key={order.id}
-                    variants={itemVariants}
-                    style={{
-                      ...styles.orderCard,
-                      borderColor: isCancelled ? 'var(--border)' : 'rgba(16, 185, 129, 0.2)',
-                      opacity: isCancelled ? 0.75 : 1,
-                      boxShadow: isCancelled ? 'var(--shadow-sm)' : 'var(--shadow-3d)',
-                    }}
-                    onClick={() => setOrderToView(order)}
-                    whileHover={isCancelled ? { y: -1, boxShadow: 'var(--shadow-md)' } : { y: -2, boxShadow: 'var(--shadow-3d-hover)' }}
-                    whileTap={isCancelled ? { scale: 0.99 } : { y: 2, boxShadow: 'var(--shadow-3d-active)' }}
-                  >
-                    <div style={styles.orderCardHeader}>
-                      <div style={styles.orderCardMeta}>
-                        <span style={styles.orderCardIdText}>#{order.id.slice(-6).toUpperCase()}</span>
-                        <span style={{
-                          ...styles.statusBadge,
-                          backgroundColor: isCancelled ? 'var(--danger-light)' : 'var(--success-light)',
-                          color: isCancelled ? 'var(--danger)' : 'var(--success)',
-                        }}>
-                          <span style={{
-                            width: '5px',
-                            height: '5px',
-                            borderRadius: '50%',
-                            backgroundColor: isCancelled ? 'var(--danger)' : 'var(--success)',
-                            display: 'inline-block',
-                            marginRight: '5px',
-                          }} />
-                          {order.status}
-                        </span>
-                      </div>
-                      <span style={styles.orderCardDate}>{dateStr} • {timeStr}</span>
-                    </div>
-
-                    <div style={styles.orderStoreInfo}>
-                      <div style={styles.orderAvatar}>
-                        {initials}
-                      </div>
-                      <div style={styles.orderStoreDetails}>
-                        <span style={styles.orderStoreName}>{order.personName}</span>
-                        <span style={styles.orderStoreSubtitle}>Order Sheet Request</span>
-                      </div>
-                    </div>
-
-                    {/* Summary of items */}
-                    <div style={styles.orderItemsSummary}>
-                      <div style={styles.summaryLabelRow}>
-                        <span style={styles.summaryLabel}>Order Preview</span>
-                        <span style={styles.summaryLabelCount}>{order.totalItems} {order.totalItems === 1 ? 'item' : 'items'}</span>
-                      </div>
-                      <div style={styles.orderItemsInlineList}>
-                        {order.items.slice(0, 3).map((it, idx) => (
-                          <div key={idx} style={styles.summaryItemRow}>
-                            <span style={styles.summaryItemName}>{it.name}</span>
-                            <span style={styles.summaryItemQty}>
-                              {it.quantity}{it.unit || ''}
-                            </span>
-                          </div>
-                        ))}
-                        {order.items.length > 3 && (
-                          <div style={styles.summaryItemRowMore}>
-                            <span>+ {order.items.length - 3} more products</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {order.notes && (
-                      <div style={styles.orderNotesBlock}>
-                        <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.4' }}>
-                          <span style={{ fontWeight: '700', color: 'var(--text-secondary)' }}>Notes: </span>
-                          {order.notes}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Order Footer card actions */}
-                    <div style={styles.orderCardFooter}>
-                      <div style={styles.secondaryActions}>
-                        {!isCancelled && (
-                          <motion.button
-                            whileTap={{ scale: 0.96 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOrderToCancel(order);
-                            }}
-                            style={styles.cancelButton}
-                          >
-                            Cancel
-                          </motion.button>
-                        )}
-                        <motion.button
-                          whileTap={{ scale: 0.96 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleReorder(order);
-                          }}
-                          style={styles.reorderButton}
+                {!searchQuery && categories.length > 0 && (
+                  <div style={styles.categoryBar} className="no-scrollbar">
+                    {categories.map(cat => {
+                      const isActive = activeCategory === cat;
+                      const emoji = categoryEmojis[cat] || '📦';
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => scrollToCategory(cat)}
+                          className={`mobile-cat-pill ${isActive ? 'active' : ''}`}
                         >
-                          Reorder
-                        </motion.button>
-                      </div>
-
-                      <motion.button
-                        whileTap={{ scale: 0.96 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const wText = formatWhatsAppMessage(order);
-                          window.open(`https://wa.me/?text=${encodeURIComponent(wText)}`, '_blank');
-                        }}
-                        style={styles.resendWhatsAppButton}
-                      >
-                        Send to WhatsApp
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
-          )}
-        </div>
-      ) : (
-        /* Analytics Panel view */
-        <div style={styles.contentWrap}>
-          <AnalyticsDashboard
-            analytics={analytics}
-            orders={orders}
-            items={items}
-            loading={analyticsLoading}
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-          />
-        </div>
-      )}
-
-      {/* Floating Bottom Drawer Cart Trigger Button (Only Catalog view when items exist) */}
-      <AnimatePresence>
-        {activeTab === 'catalog' && cartCount > 0 && (
-          <motion.button
-            initial={{ y: 80, x: '-50%', opacity: 0 }}
-            animate={{ y: 0, x: '-50%', opacity: 1 }}
-            exit={{ y: 80, x: '-50%', opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 25 }}
-            onClick={() => setIsCartOpen(true)}
-            style={styles.floatingCart}
-            whileHover={{ scale: 1.02, x: '-50%' }}
-            whileTap={{ scale: 0.98, x: '-50%' }}
-            aria-label="View Order Cart"
-          >
-            <div style={styles.floatingCartContent}>
-              <div style={styles.floatingCartIconWrapper}>
-                <ShoppingCart size={18} color="#ffffff" strokeWidth={2.5} />
-                <span id="cart-floating-badge" style={styles.floatingCartBadge}>
-                  {cartCount}
-                </span>
-              </div>
-              <span style={styles.floatingCartText}>View Order Sheet</span>
-            </div>
-            <ArrowRight size={16} strokeWidth={2.5} />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Dynamic Slide Drawer */}
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cart={cart}
-        updateQuantity={(id, q, e) => updateQuantity(id, q, e)}
-        onPlaceOrder={handlePlaceOrder}
-        isSubmitting={isSubmitting}
-        isSuccess={isSuccess}
-      />
-
-      {/* Show Order Details Drawer */}
-      <ShowOrder
-        order={orderToView}
-        onClose={() => setOrderToView(null)}
-        onResendWhatsApp={(order) => {
-          const wText = formatWhatsAppMessage(order);
-          window.open(`https://wa.me/?text=${encodeURIComponent(wText)}`, '_blank');
-        }}
-        onCancel={handleCancelOrder}
-        onReorder={handleReorder}
-      />
-
-      {/* Order Confirmed Intermediate Overlay */}
-      <AnimatePresence>
-        {confirmedOrder && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleDismissConfirmed}
-              style={styles.confirmedOverlay}
-            />
-            {/* Centering wrapper - separate from motion so transforms don't conflict */}
-            <div style={styles.confirmedWrapper}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.88 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.88 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-              style={styles.confirmedCard}
-            >
-              {/* Close button */}
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={handleDismissConfirmed}
-                style={styles.confirmedCloseBtn}
-                aria-label="Close confirmation"
-              >
-                <X size={18} strokeWidth={2.5} />
-              </motion.button>
-
-              {/* Success animation */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.1 }}
-                style={styles.confirmedIconCircle}
-              >
-                <CheckCircle2 size={40} strokeWidth={2} color="#ffffff" />
-              </motion.div>
-
-              <motion.h2
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                style={styles.confirmedTitle}
-              >
-                Order Confirmed!
-              </motion.h2>
-
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                style={styles.confirmedSubtitle}
-              >
-                #{confirmedOrder.id?.slice(-6).toUpperCase()} • {confirmedOrder.totalItems || confirmedOrder.items?.length} items
-              </motion.p>
-
-              {/* Order summary preview */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-                style={styles.confirmedSummary}
-              >
-                {confirmedOrder.items?.slice(0, 4).map((item, idx) => (
-                  <div key={idx} style={styles.confirmedSummaryRow}>
-                    <span style={styles.confirmedSummaryName}>{item.name}</span>
-                    <span style={styles.confirmedSummaryQty}>{item.quantity}{item.unit || ''}</span>
-                  </div>
-                ))}
-                {confirmedOrder.items?.length > 4 && (
-                  <div style={styles.confirmedSummaryMore}>
-                    + {confirmedOrder.items.length - 4} more items
+                          <span>{emoji}</span>
+                          <span>{cat}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
-              </motion.div>
+              </div>
 
-              {/* Primary WhatsApp button */}
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                whileHover={{ scale: 1.02, boxShadow: '0 8px 25px rgba(37, 211, 102, 0.35)' }}
-                whileTap={{ scale: 0.97 }}
-                onClick={handleSendToWhatsApp}
-                style={styles.confirmedWhatsAppBtn}
-              >
-                <MessageCircle size={20} strokeWidth={2.5} style={{ marginRight: '10px' }} />
-                Send to WhatsApp
-              </motion.button>
+              {/* Products */}
+              {loading ? (
+                <div style={styles.loadingGrid}>
+                  {[1, 2, 3, 4, 5, 6].map(n => (
+                    <div key={n} style={styles.skeletonCard}>
+                      <div style={styles.skeletonThumb} className="skeleton" />
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ height: '16px', width: '65%', borderRadius: '6px' }} className="skeleton" />
+                        <div style={{ height: '12px', width: '30%', borderRadius: '6px' }} className="skeleton" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredItems.length === 0 ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={styles.emptyState}>
+                  <div style={styles.emptyCircle}>
+                    <Search size={32} color="var(--text-muted)" />
+                  </div>
+                  <h3 style={styles.emptyTitle}>No products found</h3>
+                  <p style={styles.emptyDesc}>Try searching with different keywords</p>
+                </motion.div>
+              ) : (
+                <div style={styles.catalogWrap}>
+                  {categories.map(cat => {
+                    const catItems = filteredItems.filter(i => i.category === cat);
+                    if (catItems.length === 0) return null;
+                    const emoji = categoryEmojis[cat] || '📦';
+                    return (
+                      <div
+                        key={cat}
+                        id={`cat-section-${encodeURIComponent(cat)}`}
+                        data-category={cat}
+                        style={styles.categorySection}
+                      >
+                        <h3 style={styles.catHeading}>
+                          <span style={{ fontSize: '18px' }}>{emoji}</span>
+                          {cat}
+                        </h3>
+                        <div className="products-grid">
+                          {catItems.map(item => {
+                            const cartItem = cart.find(c => c.id === item.id);
+                            const qty = cartItem ? cartItem.quantity : 0;
+                            return (
+                              <motion.div
+                                key={item.id}
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                whileHover={{ y: -3, boxShadow: 'var(--shadow-md)' }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                style={{
+                                  ...styles.productCard,
+                                  borderColor: qty > 0 ? 'var(--accent)' : 'var(--border)',
+                                }}
+                              >
+                                <img src={item.image} alt={item.name} style={styles.productImg} loading="lazy" />
+                                <div style={styles.productBody}>
+                                  <h4 style={styles.productName}>{item.name}</h4>
+                                  <div style={styles.productMeta}>
+                                    {item.unit && <span style={styles.unitBadge}>{item.unit}</span>}
+                                    {showPrice && item.price && (
+                                      <span style={styles.priceBadge}>₹{item.price.toFixed(0)}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div style={styles.selectorWrap}>
+                                  <QuantitySelector
+                                    quantity={qty}
+                                    unit={item.unit}
+                                    onChange={(q, e) => updateQuantity(item.id, q, e)}
+                                  />
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : activeTab === 'orders' ? (
+            /* ─── Orders Tab ─── */
+            <>
+              <div style={styles.ordersHeader}>
+                <h2 style={styles.sectionTitle}>Order History</h2>
+                <span style={styles.orderCount}>{orders.length} orders</span>
+              </div>
 
-              {/* Secondary actions */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                style={styles.confirmedSecondaryActions}
-              >
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleCopyOrderText}
-                  style={styles.confirmedCopyBtn}
-                >
-                  {copiedToClipboard ? (
-                    <><Check size={14} style={{ marginRight: '6px' }} /> Copied!</>
-                  ) : (
-                    <><Copy size={14} style={{ marginRight: '6px' }} /> Copy Order Text</>
-                  )}
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleDismissConfirmed}
-                  style={styles.confirmedDismissBtn}
-                >
-                  Done
-                </motion.button>
-              </motion.div>
-            </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
+              {orders.length === 0 ? (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={styles.emptyState}>
+                  <div style={styles.emptyCircle}>
+                    <ClipboardList size={32} color="var(--text-muted)" />
+                  </div>
+                  <h3 style={styles.emptyTitle}>No orders yet</h3>
+                  <p style={styles.emptyDesc}>Start ordering from the Products tab</p>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setActiveTab('catalog')}
+                    style={styles.primaryBtn}
+                  >
+                    Browse Products
+                  </motion.button>
+                </motion.div>
+              ) : (
+                <motion.div variants={staggerContainer} initial="hidden" animate="show" style={styles.ordersList}>
+                  {orders.map(order => {
+                    const initials = order.personName
+                      ? order.personName.trim().split(/\s+/).map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?';
+                    const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                    const timeStr = new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const cancelled = order.status === 'Cancelled';
 
-      {/* Navigation tabs */}
-      <BottomNavigation
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+                    return (
+                      <motion.div
+                        key={order.id}
+                        variants={fadeInUp}
+                        whileHover={{ y: -2, boxShadow: 'var(--shadow-md)' }}
+                        onClick={() => setOrderToView(order)}
+                        style={{
+                          ...styles.orderCard,
+                          opacity: cancelled ? 0.7 : 1,
+                          borderColor: cancelled ? 'var(--border)' : 'rgba(39, 174, 96, 0.2)',
+                        }}
+                      >
+                        <div style={styles.orderCardTop}>
+                          <div style={styles.orderMeta}>
+                            <span style={styles.orderId}>#{order.id.slice(-6).toUpperCase()}</span>
+                            <span style={{
+                              ...styles.statusBadge,
+                              backgroundColor: cancelled ? 'var(--danger-light)' : 'var(--success-light)',
+                              color: cancelled ? 'var(--danger)' : 'var(--success)',
+                            }}>
+                              <span style={{
+                                width: '5px', height: '5px', borderRadius: '50%',
+                                backgroundColor: cancelled ? 'var(--danger)' : 'var(--success)',
+                                marginRight: '5px',
+                              }} />
+                              {order.status}
+                            </span>
+                          </div>
+                          <span style={styles.orderDate}>{dateStr} · {timeStr}</span>
+                        </div>
 
-      {/* Cancel Order Confirmation Dialog */}
-      <AnimatePresence>
-        {orderToCancel && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setOrderToCancel(null)}
-              style={styles.confirmOverlay}
+                        <div style={styles.orderPerson}>
+                          <div style={styles.avatar}>{initials}</div>
+                          <div>
+                            <span style={styles.personName}>{order.personName}</span>
+                            <span style={styles.personSub}>{order.totalItems} {order.totalItems === 1 ? 'item' : 'items'}</span>
+                          </div>
+                        </div>
+
+                        {/* Preview */}
+                        <div style={styles.orderPreview}>
+                          {order.items.slice(0, 3).map((it, idx) => (
+                            <div key={idx} style={styles.previewRow}>
+                              <span style={styles.previewName}>{it.name}</span>
+                              <span style={styles.previewQty}>{it.quantity}{it.unit || ''}</span>
+                            </div>
+                          ))}
+                          {order.items.length > 3 && (
+                            <span style={styles.previewMore}>+{order.items.length - 3} more</span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div style={styles.orderActions}>
+                          <div style={styles.orderActionsLeft}>
+                            {!cancelled && (
+                              <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={e => { e.stopPropagation(); setOrderToCancel(order); }}
+                                style={styles.cancelBtn}
+                              >Cancel</motion.button>
+                            )}
+                            <motion.button
+                              whileTap={{ scale: 0.95 }}
+                              onClick={e => { e.stopPropagation(); handleReorder(order); }}
+                              style={styles.reorderBtn}
+                            >Reorder</motion.button>
+                          </div>
+                          <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={e => {
+                              e.stopPropagation();
+                              const text = formatWhatsAppMessage(order);
+                              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                            }}
+                            style={styles.whatsappBtn}
+                          >
+                            <MessageCircle size={14} style={{ marginRight: '6px' }} />
+                            WhatsApp
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </>
+          ) : (
+            /* ─── Analytics Tab ─── */
+            <AnalyticsDashboard
+              analytics={analytics}
+              orders={orders}
+              items={items}
+              loading={analyticsLoading}
+              analyticsLoading={analyticsLoading}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              style={styles.confirmDialog}
+          )}
+        </div>
+
+        {/* ─── Floating Cart Button ─── */}
+        <AnimatePresence>
+          {activeTab === 'catalog' && cartCount > 0 && (
+            <motion.button
+              id="floating-cart-btn"
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 80, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              onClick={() => setIsCartOpen(true)}
+              style={styles.floatingCart}
+              className="animate-breathe"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
-              <div style={styles.confirmHeader}>
-                <AlertCircle size={24} style={{ color: 'var(--danger)' }} />
-                <h3 style={styles.confirmTitle}>Cancel Order?</h3>
+              <div style={styles.floatingCartInner}>
+                <div style={styles.floatingCartIcon}>
+                  <ShoppingCart size={18} color="#fff" />
+                  <span style={styles.floatingCartBadge}>{cartCount}</span>
+                </div>
+                <span style={styles.floatingCartText}>View Order ({cartCount})</span>
               </div>
-              <p style={styles.confirmMessage}>
-                Are you sure you want to cancel order {orderToCancel.id}? This action cannot be undone.
-              </p>
-              <div style={styles.confirmActions}>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setOrderToCancel(null)}
-                  style={styles.confirmCancelButton}
+              <ArrowRight size={18} color="#fff" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* ─── Cart Drawer ─── */}
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          cart={cart}
+          updateQuantity={(id, q, e) => updateQuantity(id, q, e)}
+          onPlaceOrder={handlePlaceOrder}
+          isSubmitting={isSubmitting}
+          isSuccess={isSuccess}
+        />
+
+        {/* ─── Show Order Detail ─── */}
+        <ShowOrder
+          order={orderToView}
+          onClose={() => setOrderToView(null)}
+          onResendWhatsApp={(order) => {
+            const text = formatWhatsAppMessage(order);
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+          }}
+          onCancel={handleCancelOrder}
+          onReorder={handleReorder}
+        />
+
+        {/* ─── Order Confirmed Overlay ─── */}
+        <AnimatePresence>
+          {confirmedOrder && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setConfirmedOrder(null)}
+                style={styles.confirmedOverlay}
+              />
+              <div style={styles.confirmedCenter}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+                  style={styles.confirmedCard}
                 >
-                  Keep Order
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleCancelOrder(orderToCancel.id)}
-                  style={styles.confirmConfirmButton}
-                >
-                  Yes, Cancel
-                </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setConfirmedOrder(null)}
+                    style={styles.confirmedClose}
+                  >
+                    <X size={18} />
+                  </motion.button>
+
+                  <motion.div
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 15, delay: 0.1 }}
+                    style={styles.confirmedIcon}
+                  >
+                    <CheckCircle2 size={40} color="#fff" />
+                  </motion.div>
+
+                  <h2 style={styles.confirmedTitle}>Order Placed! 🎉</h2>
+                  <p style={styles.confirmedSub}>
+                    #{confirmedOrder.id?.slice(-6).toUpperCase()} · {confirmedOrder.totalItems || confirmedOrder.items?.length} items
+                  </p>
+
+                  <div style={styles.confirmedPreview}>
+                    {confirmedOrder.items?.slice(0, 4).map((item, idx) => (
+                      <div key={idx} style={styles.confirmedRow}>
+                        <span style={styles.confirmedItemName}>{item.name}</span>
+                        <span style={styles.confirmedItemQty}>{item.quantity}{item.unit || ''}</span>
+                      </div>
+                    ))}
+                    {confirmedOrder.items?.length > 4 && (
+                      <p style={styles.confirmedMore}>+{confirmedOrder.items.length - 4} more</p>
+                    )}
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleSendToWhatsApp}
+                    style={styles.confirmedWhatsApp}
+                  >
+                    <MessageCircle size={20} style={{ marginRight: '10px' }} />
+                    Send to WhatsApp
+                  </motion.button>
+
+                  <div style={styles.confirmedSecondary}>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleCopyOrderText} style={styles.copyBtn}>
+                      {copiedToClipboard ? <><Check size={14} style={{ marginRight: '6px' }} /> Copied!</> : <><Copy size={14} style={{ marginRight: '6px' }} /> Copy Text</>}
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => setConfirmedOrder(null)} style={styles.doneBtn}>
+                      Done
+                    </motion.button>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ─── Cancel Confirmation Dialog ─── */}
+        <AnimatePresence>
+          {orderToCancel && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setOrderToCancel(null)}
+                style={styles.dialogOverlay}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                style={styles.dialogBox}
+              >
+                <div style={styles.dialogHeader}>
+                  <AlertCircle size={24} color="var(--danger)" />
+                  <h3 style={styles.dialogTitle}>Cancel Order?</h3>
+                </div>
+                <p style={styles.dialogMsg}>
+                  Are you sure you want to cancel this order? This cannot be undone.
+                </p>
+                <div style={styles.dialogActions}>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => setOrderToCancel(null)} style={styles.dialogKeep}>
+                    Keep Order
+                  </motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleCancelOrder(orderToCancel.id)} style={styles.dialogConfirm}>
+                    Yes, Cancel
+                  </motion.button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
 
+// ═══════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════
 const styles = {
-  rootContainer: {
-    minHeight: '100dvh',
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(6, 182, 212, 0.05) 100%)',
-  },
+  /* Header */
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -1066,941 +804,366 @@ const styles = {
     position: 'sticky',
     top: 0,
     zIndex: 110,
-    borderBottomLeftRadius: 'var(--radius-sm)',
-    borderBottomRightRadius: 'var(--radius-sm)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-  },
-  appTitle: {
-    fontSize: '20px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
-    lineHeight: '1.1',
-  },
-  appSubtitle: {
-    fontSize: '11px',
-    color: 'var(--text-secondary)',
-    fontWeight: '600',
-    marginTop: '1px',
-  },
-  themeToggle: {
-    width: '38px',
-    height: '38px',
-    borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    color: 'var(--text-primary)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-  },
-  contentWrap: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  stickyToolbar: {
-    position: 'sticky',
-    top: '72px',
-    zIndex: 100,
-    padding: '12px 16px 8px 16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    borderRadius: '16px',
-    marginTop: '6px',
-    marginRight: '8px',
-    marginLeft: '8px',
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    backdropFilter: 'blur(15px)',
-    WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-  },
-  searchWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: '14px',
-    color: 'var(--text-muted)',
-    pointerEvents: 'none',
-  },
-  searchInput: {
-    width: '100%',
-    padding: '11px 16px 11px 40px',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: 'var(--text-primary)',
-    fontSize: '14px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-  },
-  clearSearch: {
-    position: 'absolute',
-    right: '12px',
-    width: '22px',
-    height: '22px',
-    borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: 'var(--text-secondary)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-  },
-  categoriesBar: {
-    display: 'flex',
-    gap: '8px',
-    overflowX: 'auto',
-    paddingBottom: '4px',
-    whiteSpace: 'nowrap',
-    WebkitOverflowScrolling: 'touch',
-  },
-  categoryBadge: {
-    padding: '6px 14px',
-    borderRadius: 'var(--radius-full)',
-    fontSize: '12px',
-    fontWeight: '700',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    transition: 'all 0.15s ease',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-  },
-  loadingWrap: {
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-  },
-  skeletonCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    padding: '12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-  },
-  skeletonThumb: {
-    width: '56px',
-    height: '56px',
-    borderRadius: '12px',
-  },
-  emptyWrap: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '60px 24px',
-  },
-  emptyCircleIcon: {
-    width: '72px',
-    height: '72px',
-    borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-  },
-  createFirstOrderButton: {
-    marginTop: '20px',
-    backgroundColor: 'var(--accent)',
-    color: '#ffffff',
-    padding: '10px 22px',
-    borderRadius: 'var(--radius-full)',
-    fontWeight: '700',
-    fontSize: '13px',
-    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
-  },
-  catalogList: {
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-  categorySection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    scrollMarginTop: '160px',
-  },
-  categoryTitle: {
-    fontSize: '15px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
-    letterSpacing: '-0.01em',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    textTransform: 'uppercase',
-  },
-  cardsGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  productCard: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '14px',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    borderRadius: '20px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  productThumb: {
-    width: '60px',
-    height: '60px',
-    borderRadius: '14px',
-    objectFit: 'cover',
-  },
-  productInfo: {
-    flex: 1,
-    padding: '0 14px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  productName: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-    lineHeight: '1.3',
-  },
-  productUnitBadge: {
-    fontSize: '9px',
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    color: 'var(--text-secondary)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    padding: '2px 8px',
-    borderRadius: 'var(--radius-full)',
-    width: 'fit-content',
-    letterSpacing: '0.04em',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-  },
-  priceBadge: {
-    fontSize: '11px',
-    fontWeight: '700',
-    color: 'var(--success)',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    padding: '3px 8px',
-    borderRadius: '10px',
-    marginTop: '4px',
-    display: 'inline-block',
-    border: '1px solid rgba(16, 185, 129, 0.3)',
-  },
-  selectorWrapper: {
-    flexShrink: 0,
-  },
-  floatingCart: {
-    position: 'fixed',
-    bottom: 'calc(76px + env(safe-area-inset-bottom))',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: 'calc(100% - 32px)',
-    maxWidth: '448px',
-    height: '52px',
-    backgroundColor: 'rgba(99, 102, 241, 0.9)',
+    backgroundColor: 'var(--glass-bg-strong)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    color: 'var(--surface)',
-    borderRadius: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 20px',
-    boxShadow: '0 12px 40px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-    zIndex: 900,
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    marginBottom:'6px'
-  },
-  floatingCartContent: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  floatingCartIconWrapper: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  floatingCartBadge: {
-    position: 'absolute',
-    top: '-6px',
-    right: '-10px',
-    backgroundColor: 'var(--accent)',
-    color: '#ffffff',
-    fontSize: '9px',
-    fontWeight: '800',
-    minWidth: '16px',
-    height: '16px',
-    borderRadius: 'var(--radius-full)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0 4px',
-  },
-  floatingCartText: {
-    fontSize: '13px',
-    fontWeight: '700',
-  },
-  historyHeader: {
-    padding: '24px 20px 14px 20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
     borderBottom: '1px solid var(--border)',
   },
-  sectionHeading: {
-    fontSize: '18px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
+  headerLeft: { display: 'flex', alignItems: 'center', gap: '12px' },
+  headerBrand: { display: 'flex', alignItems: 'center', gap: '10px' },
+  brandIconSmall: {
+    width: '36px', height: '36px', borderRadius: 'var(--radius-sm)',
+    background: 'var(--accent-gradient)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 4px 12px rgba(230, 126, 34, 0.3)',
   },
-  historyCounter: {
-    color: 'var(--text-secondary)',
-    fontSize: '12px',
-    fontWeight: '600',
-    backgroundColor: 'var(--surface-secondary)',
-    padding: '3px 10px',
-    borderRadius: 'var(--radius-full)',
-  },
-  historyList: {
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  orderCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: '20px',
-    padding: '16px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease-in-out',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  orderCardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  orderCardMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  orderCardIdText: {
-    fontFamily: 'var(--font-heading)',
-    fontSize: '13px',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-  },
-  statusBadge: {
-    fontSize: '9px',
-    fontWeight: '800',
-    padding: '3px 8px',
-    borderRadius: 'var(--radius-full)',
-    display: 'flex',
-    alignItems: 'center',
-    textTransform: 'uppercase',
+  headerTitle: { fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.1' },
+  headerProTag: {
+    fontSize: '9px', fontWeight: '800', color: '#ffffff',
+    background: 'var(--accent-gradient)', padding: '2px 6px',
+    borderRadius: 'var(--radius-full)', textTransform: 'uppercase',
     letterSpacing: '0.04em',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
   },
-  orderCardDate: {
-    fontSize: '11px',
-    color: 'var(--text-secondary)',
-    fontWeight: '600',
-  },
-  orderStoreInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  orderAvatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    color: 'var(--text-primary)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '11px',
-    fontWeight: '700',
-    flexShrink: 0,
-  },
-  orderStoreDetails: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1px',
-  },
-  orderStoreName: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: 'var(--text-primary)',
-  },
-  orderStoreSubtitle: {
-    fontSize: '10px',
-    color: 'var(--text-muted)',
-    fontWeight: '500',
-  },
-  orderItemsSummary: {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    padding: '10px 12px',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  summaryLabelRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  summaryLabel: {
-    fontWeight: '700',
-    color: 'var(--text-secondary)',
-    fontSize: '10px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  summaryLabelCount: {
-    fontSize: '10px',
-    fontWeight: '700',
-    color: 'var(--text-muted)',
-  },
-  orderItemsInlineList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  summaryItemRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    fontSize: '12px',
-    color: 'var(--text-primary)',
-  },
-  summaryItemName: {
-    fontWeight: '500',
-  },
-  summaryItemQty: {
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-  },
-  summaryItemRowMore: {
-    fontSize: '11px',
-    color: 'var(--text-muted)',
-    fontWeight: '500',
-    paddingTop: '4px',
-    borderTop: '1px dashed var(--border)',
-  },
-  orderNotesBlock: {
-    fontSize: '12px',
-    color: 'var(--text-secondary)',
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-    padding: '8px 12px',
-    borderRadius: '12px',
-    lineHeight: '1.4',
-  },
-  orderCardFooter: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTop: '1px solid var(--border)',
-    paddingTop: '10px',
-    marginTop: '4px',
-  },
-  secondaryActions: {
-    display: 'flex',
-    gap: '6px',
-  },
-  resendWhatsAppButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(18, 140, 126, 0.9)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: '#ffffff',
-    padding: '6px 12px',
-    borderRadius: '10px',
-    fontSize: '11px',
-    fontWeight: '700',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    transition: 'all 0.15s ease',
-  },
-  cancelButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    color: 'var(--danger)',
-    padding: '6px 12px',
-    borderRadius: '10px',
-    fontSize: '11px',
-    fontWeight: '600',
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    transition: 'all 0.15s ease',
-  },
-  reorderButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    color: 'var(--text-primary)',
-    padding: '6px 12px',
-    borderRadius: '10px',
-    fontSize: '11px',
-    fontWeight: '600',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    transition: 'all 0.15s ease',
-  },
-  confirmOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(9, 13, 22, 0.6)',
-    backdropFilter: 'blur(4px)',
-    WebkitBackdropFilter: 'blur(4px)',
-    zIndex: 3000,
-  },
-  confirmDialog: {
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    width: '100%',
-    maxWidth: '480px',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    borderTopLeftRadius: '24px',
-    borderTopRightRadius: '24px',
-    padding: '24px',
-    paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
-    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
-    zIndex: 3001,
-    border: '1px solid rgba(255, 255, 255, 0.4)',
-    borderBottom: 'none',
-  },
-  confirmHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    marginBottom: '16px',
-  },
-  confirmTitle: {
-    fontSize: '18px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
-    margin: 0,
-  },
-  confirmMessage: {
-    fontSize: '14px',
-    color: 'var(--text-secondary)',
-    lineHeight: '1.5',
-    marginBottom: '24px',
-  },
-  confirmActions: {
-    display: 'flex',
-    gap: '12px',
-    justifyContent: 'flex-end',
-  },
-  confirmCancelButton: {
-    padding: '10px 20px',
-    borderRadius: 'var(--radius-full)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '700',
-  },
-  confirmConfirmButton: {
-    padding: '10px 20px',
-    borderRadius: 'var(--radius-full)',
-    border: 'none',
-    backgroundColor: 'rgba(239, 68, 68, 0.9)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '700',
-  },
-  filterContainer: {
-    display: 'flex',
-    gap: '10px',
-    padding: '16px',
-    borderBottom: '1px solid var(--border)',
-  },
-  filterSelect: {
-    padding: '8px 12px',
-    borderRadius: 'var(--radius-sm)',
-    border: '1px solid var(--border)',
-    backgroundColor: 'var(--surface)',
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '600',
-  },
-  analyticsContainer: {
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-  summaryCards: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
-  },
-  summaryCard: {
-    backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-xs)',
-    padding: '16px',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'var(--border)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  summaryValue: {
-    fontSize: '24px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
-    lineHeight: '1.2',
-  },
-  summaryLabel: {
-    fontSize: '10px',
-    color: 'var(--text-muted)',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  analyticsSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  analyticsSectionHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  analyticsTitle: {
-    fontSize: '16px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
-    margin: 0,
-  },
-  analyticsBadge: {
-    fontSize: '11px',
-    fontWeight: '700',
-    color: 'var(--text-secondary)',
-    backgroundColor: 'var(--surface-secondary)',
-    padding: '4px 10px',
-    borderRadius: 'var(--radius-full)',
-    border: '1px solid var(--border)',
-  },
-  chartCard: {
-    backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-md)',
-    padding: '16px',
-    border: '1px solid var(--border)',
-    boxShadow: 'var(--shadow-sm)',
-  },
-  personList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  personStat: {
-    backgroundColor: 'var(--surface)',
-    borderRadius: 'var(--radius-md)',
-    padding: '12px 14px',
-    border: '1px solid var(--border)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  personAvatar: {
-    width: '36px',
-    height: '36px',
-    borderRadius: 'var(--radius-full)',
-    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-    color: '#ffffff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '14px',
-    fontWeight: '800',
-    flexShrink: 0,
-  },
-  personInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-    flex: 1,
-  },
-  personName: {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-  },
-  personStats: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-  },
-  personStatItem: {
-    fontSize: '12px',
-    color: 'var(--text-secondary)',
-    fontWeight: '500',
-  },
-  personStatValue: {
-    fontWeight: '700',
-    color: 'var(--text-primary)',
-  },
-  personStatDot: {
-    fontSize: '8px',
-    color: 'var(--text-muted)',
+  headerSub: { fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' },
+  headerTitleDesktop: { fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 },
+  headerActions: { display: 'flex', gap: '8px' },
+  iconBtn: {
+    width: '40px', height: '40px', borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--surface-secondary)', color: 'var(--text-secondary)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    border: 'none', cursor: 'pointer', transition: 'all 0.15s ease',
   },
 
-  // Order Confirmed Intermediate Overlay styles
-  confirmedOverlay: {
+  /* Mobile Hero Banner */
+  mobileHeroBanner: {
+    margin: '12px 16px 4px',
+    padding: '16px 18px',
+    borderRadius: 'var(--radius-lg)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    boxShadow: '0 8px 24px rgba(230, 126, 34, 0.25)',
+  },
+  heroBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(8px)',
+    padding: '3px 8px',
+    borderRadius: 'var(--radius-full)',
+    fontSize: '10px',
+    fontWeight: '700',
+    marginBottom: '6px',
+    letterSpacing: '0.02em',
+  },
+  heroTitle: {
+    fontSize: '18px',
+    fontWeight: '800',
+    lineHeight: '1.2',
+    margin: '0 0 2px 0',
+    fontFamily: 'var(--font-heading)',
+  },
+  heroSub: {
+    fontSize: '12px',
+    opacity: 0.85,
+    margin: 0,
+    fontWeight: '500',
+  },
+  heroIconBox: {
+    width: '48px',
+    height: '48px',
+    borderRadius: 'var(--radius-md)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backdropFilter: 'blur(8px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+
+  /* Content */
+  contentArea: { flex: 1, display: 'flex', flexDirection: 'column' },
+
+  /* Toolbar */
+  toolbar: {
+    position: 'sticky', top: '65px', zIndex: 100,
+    padding: '12px 16px 8px',
+    backgroundColor: 'var(--glass-bg-strong)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    borderBottom: '1px solid var(--border)',
+    display: 'flex', flexDirection: 'column', gap: '10px',
+  },
+  searchWrap: { position: 'relative', display: 'flex', alignItems: 'center' },
+  searchIcon: { position: 'absolute', left: '14px', color: 'var(--text-muted)', pointerEvents: 'none' },
+  searchInput: {
+    width: '100%', padding: '12px 16px 12px 44px',
+    borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--border)',
+    backgroundColor: 'var(--surface)', color: 'var(--text-primary)', fontSize: '15px',
+  },
+  clearBtn: {
+    position: 'absolute', right: '12px', width: '24px', height: '24px',
+    borderRadius: 'var(--radius-full)', backgroundColor: 'var(--surface-secondary)',
+    color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    border: 'none', cursor: 'pointer',
+  },
+  categoryBar: {
+    display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px',
+    whiteSpace: 'nowrap', WebkitOverflowScrolling: 'touch',
+  },
+  categoryPill: {
+    padding: '8px 16px', borderRadius: 'var(--radius-full)',
+    fontSize: '13px', fontWeight: '700', borderWidth: '1.5px', borderStyle: 'solid',
+    cursor: 'pointer', transition: 'all 0.15s ease', flexShrink: 0,
+  },
+
+  /* Loading */
+  loadingGrid: {
+    padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px',
+  },
+  skeletonCard: {
+    display: 'flex', alignItems: 'center', gap: '16px', padding: '14px',
+    backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
+  },
+  skeletonThumb: { width: '56px', height: '56px', borderRadius: 'var(--radius-sm)' },
+
+  /* Empty */
+  emptyState: {
+    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+    justifyContent: 'center', padding: '60px 24px', textAlign: 'center',
+  },
+  emptyCircle: {
+    width: '80px', height: '80px', borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--surface-secondary)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', marginBottom: '16px',
+  },
+  emptyTitle: { fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '6px' },
+  emptyDesc: { fontSize: '14px', color: 'var(--text-secondary)', maxWidth: '260px', marginBottom: '20px' },
+  primaryBtn: {
+    background: 'var(--accent-gradient)', color: '#fff', padding: '12px 24px',
+    borderRadius: 'var(--radius-full)', fontWeight: '700', fontSize: '14px',
+    border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(230, 126, 34, 0.25)',
+  },
+
+  /* Catalog */
+  catalogWrap: { padding: '16px', display: 'flex', flexDirection: 'column', gap: '24px' },
+  categorySection: { display: 'flex', flexDirection: 'column', gap: '12px', scrollMarginTop: '150px' },
+  catHeading: {
+    fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)',
+    display: 'flex', alignItems: 'center', gap: '10px', textTransform: 'uppercase',
+    letterSpacing: '0.02em', fontFamily: 'var(--font-heading)',
+  },
+  productCard: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '14px 16px', backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)',
+    borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)',
+    gap: '14px', cursor: 'default', transition: 'all 0.2s ease',
+  },
+  productImg: { width: '64px', height: '64px', borderRadius: 'var(--radius-md)', objectFit: 'cover', flexShrink: 0 },
+  productBody: { flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 },
+  productName: {
+    fontSize: '17px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.25',
+    fontFamily: 'var(--font-heading)', letterSpacing: '-0.01em', wordBreak: 'break-word',
+  },
+  productMeta: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' },
+  unitBadge: {
+    fontSize: '12px', fontWeight: '700', textTransform: 'uppercase',
+    color: 'var(--text-secondary)', backgroundColor: 'var(--surface-secondary)',
+    padding: '3px 10px', borderRadius: 'var(--radius-full)', letterSpacing: '0.03em',
+    border: '1px solid var(--border)',
+  },
+  priceBadge: {
+    fontSize: '12px', fontWeight: '800', color: 'var(--success)',
+    backgroundColor: 'var(--success-light)', padding: '3px 10px', borderRadius: 'var(--radius-full)',
+  },
+  selectorWrap: { flexShrink: 0 },
+
+  /* Floating Cart */
+  floatingCart: {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(9, 13, 22, 0.6)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
+    bottom: 'calc(80px + env(safe-area-inset-bottom))',
+    left: '16px',
+    right: '16px',
+    maxWidth: '440px',
+    margin: '0 auto',
+    height: '52px',
+    background: 'var(--accent-gradient)',
+    color: '#fff',
+    borderRadius: 'var(--radius-md)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 18px',
+    border: 'none',
+    cursor: 'pointer',
+    zIndex: 900,
+    boxShadow: '0 8px 24px rgba(255, 122, 0, 0.35)',
+  },
+  floatingCartInner: { display: 'flex', alignItems: 'center', gap: '12px' },
+  floatingCartIcon: { position: 'relative', display: 'flex', alignItems: 'center' },
+  floatingCartBadge: {
+    position: 'absolute', top: '-6px', right: '-10px',
+    backgroundColor: '#fff', color: 'var(--accent)',
+    fontSize: '10px', fontWeight: '800', minWidth: '18px', height: '18px',
+    borderRadius: 'var(--radius-full)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', padding: '0 4px',
+  },
+  floatingCartText: { fontSize: '14px', fontWeight: '700' },
+
+  /* Orders */
+  ordersHeader: {
+    padding: '20px 20px 14px', display: 'flex',
+    justifyContent: 'space-between', alignItems: 'baseline',
+    borderBottom: '1px solid var(--border)',
+  },
+  sectionTitle: { fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)' },
+  orderCount: {
+    color: 'var(--text-muted)', fontSize: '12px', fontWeight: '600',
+    backgroundColor: 'var(--surface-secondary)', padding: '4px 12px',
+    borderRadius: 'var(--radius-full)',
+  },
+  ordersList: { padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' },
+  orderCard: {
+    backgroundColor: 'var(--surface)', border: '1.5px solid var(--border)',
+    borderRadius: 'var(--radius-lg)', padding: '16px',
+    boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column',
+    gap: '12px', cursor: 'pointer', transition: 'all 0.2s ease',
+  },
+  orderCardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  orderMeta: { display: 'flex', alignItems: 'center', gap: '8px' },
+  orderId: { fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' },
+  statusBadge: {
+    fontSize: '9px', fontWeight: '800', padding: '3px 8px',
+    borderRadius: 'var(--radius-full)', display: 'flex', alignItems: 'center',
+    textTransform: 'uppercase', letterSpacing: '0.03em',
+  },
+  orderDate: { fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' },
+  orderPerson: { display: 'flex', alignItems: 'center', gap: '10px' },
+  avatar: {
+    width: '34px', height: '34px', borderRadius: 'var(--radius-full)',
+    background: 'var(--accent-gradient)', color: '#fff',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '12px', fontWeight: '800', flexShrink: 0,
+  },
+  personName: { fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', display: 'block' },
+  personSub: { fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500', display: 'block' },
+  orderPreview: {
+    backgroundColor: 'var(--surface-secondary)', padding: '10px 12px',
+    borderRadius: 'var(--radius-sm)', display: 'flex', flexDirection: 'column', gap: '4px',
+  },
+  previewRow: { display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-primary)' },
+  previewName: { fontWeight: '500' },
+  previewQty: { fontWeight: '700', color: 'var(--accent)' },
+  previewMore: { fontSize: '11px', color: 'var(--text-muted)', paddingTop: '4px', borderTop: '1px dashed var(--border)' },
+  orderActions: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    borderTop: '1px solid var(--border)', paddingTop: '10px',
+  },
+  orderActionsLeft: { display: 'flex', gap: '6px' },
+  cancelBtn: {
+    padding: '7px 14px', borderRadius: 'var(--radius-sm)',
+    fontSize: '12px', fontWeight: '600', backgroundColor: 'var(--danger-light)',
+    color: 'var(--danger)', border: '1px solid rgba(231, 76, 60, 0.2)', cursor: 'pointer',
+  },
+  reorderBtn: {
+    padding: '7px 14px', borderRadius: 'var(--radius-sm)',
+    fontSize: '12px', fontWeight: '600', backgroundColor: 'var(--surface-secondary)',
+    color: 'var(--text-primary)', border: '1px solid var(--border)', cursor: 'pointer',
+  },
+  whatsappBtn: {
+    display: 'flex', alignItems: 'center', padding: '7px 14px',
+    borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: '700',
+    backgroundColor: '#25D366', color: '#fff', border: 'none', cursor: 'pointer',
+  },
+
+  /* Confirmed Overlay */
+  confirmedOverlay: {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(26, 22, 19, 0.5)', backdropFilter: 'blur(12px)',
     zIndex: 3000,
   },
-  confirmedWrapper: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 3001,
-    padding: '24px',
-    pointerEvents: 'none',
+  confirmedCenter: {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 3001, padding: '24px', pointerEvents: 'none',
   },
   confirmedCard: {
-    width: '100%',
-    maxWidth: '380px',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    borderRadius: '24px',
-    padding: '32px 24px 24px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    border: '1px solid rgba(255, 255, 255, 0.4)',
-    boxShadow: '0 25px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
-    position: 'relative',
-    pointerEvents: 'auto',
+    width: '100%', maxWidth: '400px', backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-xl)', padding: '32px 24px 24px',
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    textAlign: 'center', boxShadow: 'var(--shadow-xl)',
+    border: '1px solid var(--border)', position: 'relative', pointerEvents: 'auto',
   },
-  confirmedCloseBtn: {
-    position: 'absolute',
-    top: '12px',
-    right: '12px',
-    width: '32px',
-    height: '32px',
-    borderRadius: 'var(--radius-full)',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--text-secondary)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    cursor: 'pointer',
+  confirmedClose: {
+    position: 'absolute', top: '12px', right: '12px',
+    width: '32px', height: '32px', borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--surface-secondary)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)',
+    border: 'none', cursor: 'pointer',
   },
-  confirmedIconCircle: {
-    width: '72px',
-    height: '72px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '20px',
-    boxShadow: '0 8px 24px rgba(16, 185, 129, 0.3)',
+  confirmedIcon: {
+    width: '72px', height: '72px', borderRadius: '50%',
+    background: 'linear-gradient(135deg, #27ae60, #2ecc71)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginBottom: '20px', boxShadow: '0 8px 24px rgba(39, 174, 96, 0.3)',
   },
-  confirmedTitle: {
-    fontSize: '22px',
-    fontWeight: '800',
-    color: 'var(--text-primary)',
-    marginBottom: '6px',
-    textAlign: 'center',
+  confirmedTitle: { fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '6px' },
+  confirmedSub: { fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '20px' },
+  confirmedPreview: {
+    width: '100%', backgroundColor: 'var(--surface-secondary)', borderRadius: 'var(--radius-sm)',
+    padding: '12px 14px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '6px',
   },
-  confirmedSubtitle: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: 'var(--text-secondary)',
-    marginBottom: '20px',
-    textAlign: 'center',
+  confirmedRow: { display: 'flex', justifyContent: 'space-between' },
+  confirmedItemName: { fontSize: '13px', fontWeight: '500', color: 'var(--text-primary)' },
+  confirmedItemQty: { fontSize: '13px', fontWeight: '700', color: 'var(--accent)' },
+  confirmedMore: { fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', paddingTop: '4px' },
+  confirmedWhatsApp: {
+    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '14px 24px', borderRadius: 'var(--radius-md)',
+    backgroundColor: '#25D366', color: '#fff', fontSize: '16px', fontWeight: '700',
+    border: 'none', cursor: 'pointer', marginBottom: '12px',
+    boxShadow: '0 4px 16px rgba(37, 211, 102, 0.25)',
   },
-  confirmedSummary: {
-    width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    borderRadius: '12px',
-    padding: '12px 14px',
-    marginBottom: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
+  confirmedSecondary: { width: '100%', display: 'flex', gap: '8px' },
+  copyBtn: {
+    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '10px 16px', borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--surface-secondary)', color: 'var(--text-secondary)',
+    fontSize: '13px', fontWeight: '600', border: '1px solid var(--border)', cursor: 'pointer',
   },
-  confirmedSummaryRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  doneBtn: {
+    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '10px 16px', borderRadius: 'var(--radius-sm)',
+    backgroundColor: 'var(--surface-secondary)', color: 'var(--text-muted)',
+    fontSize: '13px', fontWeight: '600', border: '1px solid var(--border)', cursor: 'pointer',
   },
-  confirmedSummaryName: {
-    fontSize: '13px',
-    fontWeight: '500',
-    color: 'var(--text-primary)',
+
+  /* Cancel Dialog */
+  dialogOverlay: {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(26, 22, 19, 0.5)', backdropFilter: 'blur(4px)',
+    zIndex: 3000,
   },
-  confirmedSummaryQty: {
-    fontSize: '12px',
-    fontWeight: '700',
-    color: 'var(--accent)',
+  dialogBox: {
+    position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+    width: '90%', maxWidth: '400px', backgroundColor: 'var(--surface)',
+    borderRadius: 'var(--radius-xl)', padding: '24px',
+    boxShadow: 'var(--shadow-xl)', zIndex: 3001, border: '1px solid var(--border)',
   },
-  confirmedSummaryMore: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: 'var(--text-muted)',
-    textAlign: 'center',
-    paddingTop: '4px',
+  dialogHeader: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' },
+  dialogTitle: { fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 },
+  dialogMsg: { fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '24px' },
+  dialogActions: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
+  dialogKeep: {
+    padding: '10px 20px', borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--surface-secondary)', color: 'var(--text-primary)',
+    fontSize: '13px', fontWeight: '700', border: '1px solid var(--border)', cursor: 'pointer',
   },
-  confirmedWhatsAppBtn: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '14px 24px',
-    borderRadius: '16px',
-    backgroundColor: 'rgba(37, 211, 102, 0.9)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: '#ffffff',
-    fontSize: '16px',
-    fontWeight: '700',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    cursor: 'pointer',
-    marginBottom: '12px',
-    boxShadow: '0 4px 15px rgba(37, 211, 102, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-    transition: 'all 0.2s ease',
-  },
-  confirmedSecondaryActions: {
-    width: '100%',
-    display: 'flex',
-    gap: '8px',
-  },
-  confirmedCopyBtn: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px 16px',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-    fontWeight: '600',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
-    cursor: 'pointer',
-  },
-  confirmedDismissBtn: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px 16px',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-    color: 'var(--text-muted)',
-    fontSize: '13px',
-    fontWeight: '600',
-    border: '1px solid rgba(255, 255, 255, 0.25)',
-    cursor: 'pointer',
+  dialogConfirm: {
+    padding: '10px 20px', borderRadius: 'var(--radius-full)',
+    backgroundColor: 'var(--danger)', color: '#fff',
+    fontSize: '13px', fontWeight: '700', border: 'none', cursor: 'pointer',
   },
 };
