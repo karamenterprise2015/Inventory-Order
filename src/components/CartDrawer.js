@@ -13,7 +13,8 @@ export default function CartDrawer({
   updateQuantity,
   onPlaceOrder,
   isSubmitting,
-  isSuccess
+  isSuccess,
+  reorderOrderId
 }) {
   const [personName, setPersonName] = useState('');
   const [notes, setNotes] = useState('');
@@ -96,8 +97,12 @@ export default function CartDrawer({
             {/* Header */}
             <div style={styles.drawerHeader}>
               <div>
-                <h2 style={styles.title}>Your Order</h2>
-                <p style={styles.subtitle}>{totalQuantity} {totalQuantity === 1 ? 'item' : 'items'} selected</p>
+                <h2 style={styles.title}>
+                  {reorderOrderId ? `Update Order #${reorderOrderId.slice(-6).toUpperCase()}` : 'Your Order'}
+                </h2>
+                <p style={styles.subtitle}>
+                  {reorderOrderId ? 'Modify items & update in Supabase' : `${totalQuantity} ${totalQuantity === 1 ? 'item' : 'items'} selected`}
+                </p>
               </div>
               <motion.button
                 whileTap={{ scale: 0.9 }}

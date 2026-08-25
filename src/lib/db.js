@@ -153,6 +153,61 @@ export const db = {
     }
   },
 
+  updateOrder: async (orderId, orderData) => {
+    // Try Supabase first
+    try {
+      const updatePayload = {
+        person_name: orderData.personName || 'Unnamed Person',
+        notes: orderData.notes || '',
+        items: orderData.items || [],
+        total_items: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
+        status: 'Ordered',
+        created_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updatePayload)
+        .eq('id', orderId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase updateOrder error:', error);
+        throw error;
+      }
+
+      // Transform back to expected format
+      return {
+        id: data.id,
+        personName: data.person_name,
+        notes: data.notes,
+        items: data.items,
+        totalItems: data.total_items,
+        status: data.status,
+        createdAt: data.created_at,
+        cancelledAt: data.cancelled_at
+      };
+    } catch (error) {
+      console.warn('Supabase error, using in-memory fallback:', error.message);
+      // Fallback to in-memory storage
+      const orderIndex = orders.findIndex(order => order.id === orderId);
+      if (orderIndex > -1) {
+        orders[orderIndex] = {
+          ...orders[orderIndex],
+          personName: orderData.personName || 'Unnamed Person',
+          notes: orderData.notes || '',
+          items: orderData.items || [],
+          totalItems: orderData.items.reduce((sum, item) => sum + item.quantity, 0),
+          status: 'Ordered',
+          createdAt: new Date().toISOString(),
+        };
+        return orders[orderIndex];
+      }
+      return db.createOrder(orderData);
+    }
+  },
+
   cancelOrder: async (orderId) => {
     // Try Supabase first
     try {

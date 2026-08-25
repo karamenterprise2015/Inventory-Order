@@ -48,11 +48,58 @@ export async function POST(request) {
   }
 }
 
+export async function PUT(request) {
+  try {
+    const body = await request.json();
+
+    const orderId = body.orderId || body.id;
+
+    if (!orderId) {
+      return NextResponse.json(
+        { success: false, error: 'Order ID is required for update' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.items || !Array.isArray(body.items) || body.items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Order must contain at least one item' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.personName || body.personName.trim() === '') {
+      return NextResponse.json(
+        { success: false, error: 'Your Name is required' },
+        { status: 400 }
+      );
+    }
+
+    const updatedOrder = await db.updateOrder(orderId, {
+      personName: body.personName.trim(),
+      notes: body.notes ? body.notes.trim() : '',
+      items: body.items
+    });
+
+    return NextResponse.json({ success: true, order: updatedOrder });
+  } catch (error) {
+    console.error('API update order error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to update order' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request) {
+  return PUT(request);
+}
+
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get('id');
-    
+
     if (!orderId) {
       return NextResponse.json(
         { success: false, error: 'Order ID is required' },
@@ -61,7 +108,7 @@ export async function DELETE(request) {
     }
 
     const deletedOrder = await db.deleteOrder(orderId);
-    
+
     if (!deletedOrder) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },

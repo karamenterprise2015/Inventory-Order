@@ -51,6 +51,7 @@ export default function Home() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [orderToView, setOrderToView] = useState(null);
+  const [reorderOrderId, setReorderOrderId] = useState(null);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [confettiPieces, setConfettiPieces] = useState([]);
@@ -212,14 +213,23 @@ export default function Home() {
   const handlePlaceOrder = async (formData) => {
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
+      const isUpdating = Boolean(reorderOrderId);
+      const url = '/api/orders';
+      const method = isUpdating ? 'PUT' : 'POST';
+      const payload = {
+        personName: formData.personName,
+        notes: formData.notes,
+        items: cart.map(i => ({ id: i.id, name: i.name, category: i.category, unit: i.unit, quantity: i.quantity })),
+      };
+
+      if (isUpdating) {
+        payload.orderId = reorderOrderId;
+      }
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          personName: formData.personName,
-          notes: formData.notes,
-          items: cart.map(i => ({ id: i.id, name: i.name, category: i.category, unit: i.unit, quantity: i.quantity })),
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (data.success) {
@@ -227,6 +237,7 @@ export default function Home() {
         triggerConfetti();
         fetchOrders();
         setCart([]);
+        setReorderOrderId(null);
         setIsSubmitting(false);
         setIsSuccess(false);
         setIsCartOpen(false);
@@ -291,6 +302,7 @@ export default function Home() {
       return { id: o.id, name: o.name, category: o.category, unit: o.unit, quantity: o.quantity, image: base.image || '' };
     });
     setCart(restored);
+    setReorderOrderId(order.id);
     setActiveTab('catalog');
     setIsCartOpen(true);
   };
@@ -662,6 +674,7 @@ export default function Home() {
           onPlaceOrder={handlePlaceOrder}
           isSubmitting={isSubmitting}
           isSuccess={isSuccess}
+          reorderOrderId={reorderOrderId}
         />
 
         {/* ─── Show Order Detail ─── */}

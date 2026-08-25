@@ -116,7 +116,7 @@ export default function AnalyticsDashboard({
   analytics, orders, items, analyticsLoading,
   selectedMonth, selectedYear, setSelectedMonth, setSelectedYear
 }) {
-  const [trendRange, setTrendRange] = useState('day');
+  const [trendRange, setTrendRange] = useState('week');
   const allItems = items || [];
   const ordersList = orders || [];
 
@@ -154,13 +154,36 @@ export default function AnalyticsDashboard({
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(today);
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const todayOrders = orderValues.filter(o => new Date(o.createdAt) >= today);
-    const weekOrders = orderValues.filter(o => new Date(o.createdAt) >= weekStart);
-    const monthOrders = orderValues.filter(o => new Date(o.createdAt) >= monthStart);
+    const hasMonthFilter = selectedMonth !== undefined && selectedMonth !== null && selectedMonth !== 'all' && selectedMonth !== '';
+    const hasYearFilter = selectedYear !== undefined && selectedYear !== null && selectedYear !== 'all' && selectedYear !== '';
 
-    // Previous period comparisons
+    // Check if the selected filter matches today's month/year
+    const isCurrentMonthSelected = !hasMonthFilter || Number(selectedMonth) === now.getMonth();
+    const isCurrentYearSelected = !hasYearFilter || Number(selectedYear) === now.getFullYear();
+    const isCurrentPeriod = isCurrentMonthSelected && isCurrentYearSelected;
+
+    const todayOrders = isCurrentPeriod
+      ? orderValues.filter(o => new Date(o.createdAt) >= today)
+      : [];
+    const weekOrders = isCurrentPeriod
+      ? orderValues.filter(o => new Date(o.createdAt) >= weekStart)
+      : [];
+
+    // Month Total: If month or year filter is applied, total of filteredOrders is the selected month spend!
+    const monthOrders = (hasMonthFilter || hasYearFilter)
+      ? orderValues
+      : orderValues.filter(o => new Date(o.createdAt) >= monthStart);
+
+    const monthTotal = monthOrders.reduce((s, o) => s + o.value, 0);
+
+    // Display values (show N/A if viewing a non-current month/year)
+    const todayDisplay = isCurrentPeriod ? todayOrders.length : 'N/A';
+    const weekDisplay = isCurrentPeriod ? formatCurrency(weekOrders.reduce((s, o) => s + o.value, 0)) : 'N/A';
+    const monthDisplay = formatCurrency(monthTotal);
+
+    // Trends
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayEnd = new Date(today);
@@ -176,7 +199,7 @@ export default function AnalyticsDashboard({
       return d >= lastWeekStart && d < weekStart;
     });
 
-    const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = monthStart;
     const lastMonthOrders = orderValues.filter(o => {
       const d = new Date(o.createdAt);
@@ -192,21 +215,16 @@ export default function AnalyticsDashboard({
       totalOrders: count,
       totalValue: total,
       avgValue: avg,
-      todayCount: todayOrders.length,
-      todayValue: todayOrders.reduce((s, o) => s + o.value, 0),
-      weekValue: weekOrders.reduce((s, o) => s + o.value, 0),
-      monthValue: monthOrders.reduce((s, o) => s + o.value, 0),
-      todayTrend: calcTrend(todayOrders.length, yesterdayOrders.length),
-      weekTrend: calcTrend(
-        weekOrders.reduce((s, o) => s + o.value, 0),
-        lastWeekOrders.reduce((s, o) => s + o.value, 0)
-      ),
-      monthTrend: calcTrend(
-        monthOrders.reduce((s, o) => s + o.value, 0),
-        lastMonthOrders.reduce((s, o) => s + o.value, 0)
-      ),
+      todayDisplay,
+      weekDisplay,
+      monthDisplay,
+      monthValue: monthTotal,
+      isCurrentPeriod,
+      todayTrend: isCurrentPeriod ? calcTrend(todayOrders.length, yesterdayOrders.length) : undefined,
+      weekTrend: isCurrentPeriod ? calcTrend(weekOrders.reduce((s, o) => s + o.value, 0), lastWeekOrders.reduce((s, o) => s + o.value, 0)) : undefined,
+      monthTrend: calcTrend(monthTotal, lastMonthOrders.reduce((s, o) => s + o.value, 0)),
     };
-  }, [filteredOrders, allItems]);
+  }, [filteredOrders, allItems, selectedMonth, selectedYear]);
 
   // ─── Product Analytics ─────────────────────────────────
   const productAnalytics = useMemo(() => {
@@ -258,29 +276,23 @@ export default function AnalyticsDashboard({
       .sort((a, b) => b.value - a.value);
   }, [filteredOrders, allItems]);
 
-  // ─── Trend Data ────────────────────────────────────────
+  // ─── Trend Data (Price / Spend Trend) ──────────────────────────
   const trendData = useMemo(() => {
-    if (trendRange === 'day') {
-      const data = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const count = filteredOrders.filter(o => new Date(o.createdAt).toDateString() === d.toDateString()).length;
-        data.push({ label: d.toLocaleDateString('en-US', { weekday: 'short' }), orders: count });
-      }
-      return data;
-    } else if (trendRange === 'week') {
+    if (trendRange === 'week') {
       const data = [];
       for (let i = 3; i >= 0; i--) {
         const end = new Date();
         end.setDate(end.getDate() - (i * 7));
         const start = new Date(end);
         start.setDate(start.getDate() - 6);
-        const count = filteredOrders.filter(o => {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        const matchingOrders = filteredOrders.filter(o => {
           const d = new Date(o.createdAt);
           return d >= start && d <= end;
-        }).length;
-        data.push({ label: `Week ${4 - i}`, orders: count });
+        });
+        const totalSpend = matchingOrders.reduce((sum, o) => sum + calculateOrderValue(o, allItems), 0);
+        data.push({ label: `Week ${4 - i}`, price: Math.round(totalSpend) });
       }
       return data;
     } else {
@@ -288,15 +300,16 @@ export default function AnalyticsDashboard({
       for (let i = 5; i >= 0; i--) {
         const d = new Date();
         d.setMonth(d.getMonth() - i);
-        const count = filteredOrders.filter(o => {
+        const matchingOrders = filteredOrders.filter(o => {
           const od = new Date(o.createdAt);
           return od.getMonth() === d.getMonth() && od.getFullYear() === d.getFullYear();
-        }).length;
-        data.push({ label: d.toLocaleDateString('en-US', { month: 'short' }), orders: count });
+        });
+        const totalSpend = matchingOrders.reduce((sum, o) => sum + calculateOrderValue(o, allItems), 0);
+        data.push({ label: d.toLocaleDateString('en-US', { month: 'short' }), price: Math.round(totalSpend) });
       }
       return data;
     }
-  }, [filteredOrders, trendRange]);
+  }, [filteredOrders, allItems, trendRange]);
 
   // ─── Bar Chart Data ────────────────────────────────────
   const barData = useMemo(() => {
@@ -435,8 +448,8 @@ export default function AnalyticsDashboard({
             <KPICard
               icon={ShoppingBag}
               label="Today's Orders"
-              value={orderAnalytics.todayCount}
-              subtext="orders today"
+              value={orderAnalytics.todayDisplay}
+              subtext={orderAnalytics.isCurrentPeriod ? "orders today" : "N/A for selected filter"}
               trend={orderAnalytics.todayTrend}
               delay={0.1}
               color="#e67e22"
@@ -444,16 +457,16 @@ export default function AnalyticsDashboard({
             <KPICard
               icon={DollarSign}
               label="This Week"
-              value={formatCurrency(orderAnalytics.weekValue)}
-              subtext="week total"
+              value={orderAnalytics.weekDisplay}
+              subtext={orderAnalytics.isCurrentPeriod ? "week total" : "N/A for selected filter"}
               trend={orderAnalytics.weekTrend}
               delay={0.2}
               color="#3498db"
             />
             <KPICard
               icon={TrendingUp}
-              label="This Month"
-              value={formatCurrency(orderAnalytics.monthValue)}
+              label={selectedMonth !== 'all' && selectedMonth !== '' ? "Selected Month" : "This Month"}
+              value={orderAnalytics.monthDisplay}
               subtext="month total"
               trend={orderAnalytics.monthTrend}
               delay={0.3}
@@ -471,14 +484,14 @@ export default function AnalyticsDashboard({
 
           {/* Charts Grid */}
           <div className="analytics-grid">
-            {/* Order Trend */}
+            {/* Price Trend */}
             <ChartCard
-              title="Order Trends"
+              title="Price Trend"
               delay={0.5}
               fullWidth
               extra={
                 <div style={styles.trendToggle}>
-                  {['day', 'week', 'month'].map(r => (
+                  {['week', 'month'].map(r => (
                     <button
                       key={r}
                       onClick={() => setTrendRange(r)}
@@ -495,15 +508,21 @@ export default function AnalyticsDashboard({
               }
             >
               {trendData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={trendData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={trendData} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                     <XAxis dataKey="label" stroke="var(--text-muted)" fontSize={11} tick={{ fill: 'var(--text-muted)' }} />
-                    <YAxis stroke="var(--text-muted)" fontSize={11} tick={{ fill: 'var(--text-muted)' }} />
-                    <Tooltip content={<CustomTooltip valueSuffix=" orders" />} />
+                    <YAxis
+                      stroke="var(--text-muted)"
+                      fontSize={11}
+                      tick={{ fill: 'var(--text-muted)' }}
+                      tickFormatter={(v) => `₹${v}`}
+                    />
+                    <Tooltip content={<CustomTooltip valuePrefix="₹" />} />
                     <Line
                       type="monotone"
-                      dataKey="orders"
+                      dataKey="price"
+                      name="Price (₹)"
                       stroke="var(--accent)"
                       strokeWidth={3}
                       dot={{ fill: 'var(--accent)', strokeWidth: 2, r: 4 }}
