@@ -17,12 +17,10 @@ export default function BottomNavigation({ activeTab, setActiveTab }) {
       <nav className="app-sidebar desktop-only" style={styles.sidebar}>
         {/* Brand Logo */}
         <div style={styles.sidebarBrand}>
-          <div style={styles.brandIcon}>
-            <Flame size={24} color="#ffffff" strokeWidth={2.5} />
-          </div>
+          <img src="/logo.png" alt="Burger Bhau Logo" style={styles.brandLogoImg} />
           <div>
             <h1 style={styles.brandName}>Burger Bhau</h1>
-            <p style={styles.brandSub}>Store Panel</p>
+            <p style={styles.brandSub}>Franchise Panel</p>
           </div>
         </div>
 
@@ -135,15 +133,15 @@ const styles = {
     borderBottom: '1px solid var(--border)',
     marginBottom: '16px',
   },
-  brandIcon: {
+  brandLogoImg: {
     width: '42px',
     height: '42px',
     borderRadius: 'var(--radius-sm)',
-    background: 'var(--accent-gradient)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 4px 12px rgba(230, 126, 34, 0.3)',
+    objectFit: 'contain',
+    backgroundColor: '#ffffff',
+    padding: '3px',
+    boxShadow: '0 4px 12px rgba(255, 122, 0, 0.25)',
+    border: '1px solid var(--border)',
     flexShrink: 0,
   },
   brandName: {

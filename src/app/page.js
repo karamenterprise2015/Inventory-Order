@@ -332,9 +332,7 @@ export default function Home() {
         <header style={styles.header}>
           <div style={styles.headerLeft}>
             <div className="mobile-only" style={styles.headerBrand}>
-              <div style={styles.brandIconSmall}>
-                <Flame size={18} color="#fff" strokeWidth={2.5} />
-              </div>
+              <img src="/logo.png" alt="Burger Bhau Logo" style={styles.headerLogoSmall} />
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <h1 style={styles.headerTitle}>Burger Bhau</h1>
@@ -811,11 +809,11 @@ const styles = {
   },
   headerLeft: { display: 'flex', alignItems: 'center', gap: '12px' },
   headerBrand: { display: 'flex', alignItems: 'center', gap: '10px' },
-  brandIconSmall: {
+  headerLogoSmall: {
     width: '36px', height: '36px', borderRadius: 'var(--radius-sm)',
-    background: 'var(--accent-gradient)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    boxShadow: '0 4px 12px rgba(230, 126, 34, 0.3)',
+    objectFit: 'contain', backgroundColor: '#ffffff', padding: '2px',
+    boxShadow: '0 4px 12px rgba(255, 122, 0, 0.25)', border: '1px solid var(--border)',
+    flexShrink: 0,
   },
   headerTitle: { fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: '1.1' },
   headerProTag: {
