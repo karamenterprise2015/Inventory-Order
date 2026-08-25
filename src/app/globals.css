@@ -466,13 +466,13 @@ input::placeholder, textarea::placeholder {
 
 .mobile-dock-active-glow {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 64px;
-  height: 48px;
+  top: 5px;
+  bottom: 5px;
+  left: 6px;
+  right: 6px;
   border-radius: var(--radius-full);
   background: var(--accent-light);
+  border: 1px solid rgba(255, 122, 0, 0.18);
   z-index: 1;
 }
 
